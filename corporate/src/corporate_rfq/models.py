@@ -172,8 +172,6 @@ def normalize_rfq_line(raw: RawRFQLine) -> NormalizedRFQLine:
         part_number_normalized=part_norm,
         quantity=quantity,
         uom="pcs",
-        category=(
-            "circuit_breaker" if "АВТОМАТ" in upper or "CIRCUIT BREAKER" in upper else None
-        ),
+        category=("circuit_breaker" if "АВТОМАТ" in upper or "CIRCUIT BREAKER" in upper else None),
         attributes=attributes,
     )
