@@ -101,7 +101,7 @@ def load_golden_cases(path: Path) -> tuple[GoldenCase, ...]:
 
     versions = {case.dataset_version for case in cases}
     if len(versions) != 1:
-        raise ValueError(f"Golden dataset must contain exactly one version, got: {sorted(versions)}")
+        raise ValueError(\n            f"Golden dataset must contain exactly one version, got: {sorted(versions)}"\n        )
 
     return tuple(cases)
 
