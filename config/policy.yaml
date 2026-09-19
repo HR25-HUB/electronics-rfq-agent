@@ -1,0 +1,15 @@
+version: "1.0"
+product_identity:
+  hard_gates:
+    unsafe_auto_substitution_count: 0
+  auto_accept:
+    require_trusted_manufacturer: true
+    reject_critical_attribute_conflict: true
+    block_analogue_intent: true
+    block_low_confidence_evidence: true
+    require_unambiguous_quantity: true
+  human_review:
+    on_non_exact_candidate: true
+    on_missing_manufacturer: true
+    on_analogue_or_replacement_intent: true
+    on_low_confidence_evidence: true

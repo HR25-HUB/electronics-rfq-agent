@@ -1,0 +1,11 @@
+version: "1.0"
+servers:
+  github:
+    access: repository
+    mode: read_write_with_human_merge
+  opensearch:
+    access: product_catalog_search
+    mode: read_only
+  internal_docs:
+    access: architecture_and_contracts
+    mode: read_only
