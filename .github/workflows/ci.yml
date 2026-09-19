@@ -51,6 +51,16 @@ jobs:
           file: coverage.xml
           fail_ci_if_error: false
 
+      # Diagnostic pass: prints HIGH/CRITICAL findings into the Actions log.
+      # It does not weaken the blocking SARIF scan below.
+      - name: Security scan diagnostics
+        uses: aquasecurity/trivy-action@c07df6fec6fa692e6fd1200d50aaa1fdd66f03c8 # master
+        with:
+          scan-type: fs
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "0"
+
       - name: Security scan
         uses: aquasecurity/trivy-action@c07df6fec6fa692e6fd1200d50aaa1fdd66f03c8 # master
         with:
@@ -61,7 +71,7 @@ jobs:
           exit-code: "1"
 
       - name: Upload Trivy SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: trivy-results.sarif
