@@ -1,3 +1,4 @@
+# ruff: noqa: I001, RUF001
 from __future__ import annotations
 
 from pathlib import Path
