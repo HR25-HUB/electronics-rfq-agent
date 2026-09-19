@@ -1,0 +1,16 @@
+{
+  "project": "electronics-rfq-agent-corporate-full",
+  "snapshot_date": "2026-09-19",
+  "upstream_repository": "HR25-HUB/electronics-rfq-agent",
+  "feature_head_sha": "e645422ec18abf20a474c95a49f98b4e56c4ec15",
+  "security_baseline_head_sha": "8f099a210b7b7cc5561db6ec2fd2dd405f951f51",
+  "golden_dataset": "synthetic-adversarial-v1.0",
+  "golden_cases": 100,
+  "golden_expected_pass_rate": 1.0,
+  "hard_gate": {
+    "unsafe_auto_substitution_count": 0
+  },
+  "status": "development_and_testing_snapshot",
+  "production_ready": false,
+  "live_write_access": false
+}
