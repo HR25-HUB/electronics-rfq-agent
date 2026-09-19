@@ -7,7 +7,10 @@ name = "corporate-rfq-product-identity"
 version = "0.1.0"
 description = "Evidence-backed RFQ Product Identity safety vertical slice"
 requires-python = ">=3.11"
-dependencies = ["pydantic>=2.7"]
+dependencies = [
+    "httpx>=0.28",
+    "pydantic>=2.7",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.4", "ruff>=0.9", "pyrefly>=0.30"]
