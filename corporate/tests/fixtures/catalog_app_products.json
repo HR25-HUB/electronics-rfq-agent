@@ -1,0 +1,28 @@
+[
+  {
+    "product_id": "ABB:S203-C16",
+    "manufacturer": "ABB",
+    "sku": "S203-C16",
+    "name": "ABB S203-C16 circuit breaker 3P C16",
+    "category": "circuit_breaker",
+    "attributes": {
+      "poles": "3P",
+      "current": "16A",
+      "curve": "C"
+    },
+    "source_revision": "fixture-r1"
+  },
+  {
+    "product_id": "ABB:S203-C20",
+    "manufacturer": "ABB",
+    "sku": "S203-C20",
+    "name": "ABB S203-C20 circuit breaker 3P C20",
+    "category": "circuit_breaker",
+    "attributes": {
+      "poles": "3P",
+      "current": "20A",
+      "curve": "C"
+    },
+    "source_revision": "fixture-r1"
+  }
+]
