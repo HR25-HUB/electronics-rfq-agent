@@ -45,6 +45,7 @@ class NormalizedRFQLine(BaseModel):
     uom: str
     category: str | None = None
     attributes: dict[str, str] = Field(default_factory=dict)
+    policy_flags: tuple[str, ...] = ()
 
 
 class ProductRecord(BaseModel):
@@ -134,15 +135,51 @@ _QTY_RE = re.compile(r"(?P<qty>\d+(?:[.,]\d+)?)\s*(?P<uom>шт|pcs?|pieces?|pc)\
 _MPN_RE = re.compile(r"\b(?P<mpn>[A-Z]{1,8}[A-Z0-9-]*\d[A-Z0-9-]*(?:\s+[A-Z]\d{1,4})?)\b")
 _CURRENT_RE = re.compile(r"\b(?P<current>\d{1,4})\s*[AА]\b", re.IGNORECASE)
 _POLES_RE = re.compile(r"\b(?P<poles>[1-4])\s*[PРП]\b", re.IGNORECASE)
+_PACK_MATH_RE = re.compile(
+    r"\b(?:PACK|PACKS|BOX|BOXES|PACKAGE|PACKAGES|КОРОБ\w*|УПАК\w*)\b"
+    r"[^\n]{0,24}(?:X|×|\*)\s*\d",
+    re.IGNORECASE,
+)
+_NEGATIVE_QTY_RE = re.compile(
+    r"(?:—|–|:|=)\s*-\s*\d+(?:[.,]\d+)?\s*(?:шт|pcs?|pieces?|pc)\b",
+    re.IGNORECASE,
+)
+_ANALOGUE_RE = re.compile(
+    r"\b(?:АНАЛОГ\w*|ЭКВИВАЛЕНТ\w*|ЗАМЕН\w*|REPLACEMENT|EQUIVALENT|ANALOG|ANALOGUE)\b",
+    re.IGNORECASE,
+)
 
 
 def normalize_mpn(value: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", value.upper())
 
 
+def _policy_flags(upper: str) -> tuple[str, ...]:
+    flags: list[str] = []
+    if _ANALOGUE_RE.search(upper):
+        flags.append("analogue_or_replacement_intent")
+    if any(
+        marker in upper
+        for marker in (
+            "OCR CONFIDENCE LOW",
+            "CONFIDENCE LOW",
+            "LOW CONFIDENCE",
+            "LOW OCR CONFIDENCE",
+        )
+    ):
+        flags.append("low_confidence_evidence")
+    return tuple(flags)
+
+
 def normalize_rfq_line(raw: RawRFQLine) -> NormalizedRFQLine:
     text = raw.raw_text.strip()
     upper = text.upper().replace("Ё", "Е")
+
+    if _PACK_MATH_RE.search(upper):
+        raise NormalizationError("Pack multiplication requires explicit normalization/review")
+    if _NEGATIVE_QTY_RE.search(upper):
+        raise NormalizationError("Negative quantity is invalid")
+
     qty_matches = list(_QTY_RE.finditer(upper))
     if len(qty_matches) != 1:
         raise NormalizationError("Quantity/UOM must be explicit and unambiguous")
@@ -174,4 +211,5 @@ def normalize_rfq_line(raw: RawRFQLine) -> NormalizedRFQLine:
         uom="pcs",
         category=("circuit_breaker" if "АВТОМАТ" in upper or "CIRCUIT BREAKER" in upper else None),
         attributes=attributes,
+        policy_flags=_policy_flags(upper),
     )

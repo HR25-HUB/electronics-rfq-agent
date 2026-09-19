@@ -52,6 +52,28 @@ def _critical_attribute_conflicts(
     return tuple(conflicts)
 
 
+def _pre_accept_review_reasons(line: NormalizedRFQLine) -> tuple[str, ...]:
+    reasons: list[str] = []
+    if line.manufacturer is None:
+        reasons.append("manufacturer is not proven")
+    if "analogue_or_replacement_intent" in line.policy_flags:
+        reasons.append("analogue/replacement intent requires separate human decision")
+    if "low_confidence_evidence" in line.policy_flags:
+        reasons.append("low-confidence source evidence blocks automatic acceptance")
+    return tuple(reasons)
+
+
+def _exact_candidate(product: ProductRecord) -> ProductCandidate:
+    return ProductCandidate(
+        product=product,
+        relation=MatchRelation.NORMALIZED_EXACT,
+        score=1.0,
+        evidence=(
+            EvidenceItem(source="catalog", key="canonical_sku", value=product.sku),
+        ),
+    )
+
+
 class ResolveProductIdentity:
     def __init__(self, catalog: CatalogPort) -> None:
         self._catalog = catalog
@@ -75,6 +97,27 @@ class ResolveProductIdentity:
                     manufacturer=line.manufacturer,
                 )
                 if product is not None:
+                    review_reasons = _pre_accept_review_reasons(line)
+                    if review_reasons:
+                        return ProductIdentityDecision(
+                            rfq_id=line.rfq_id,
+                            line_id=line.line_id,
+                            status=DecisionStatus.REVIEW_REQUIRED,
+                            relation=MatchRelation.NORMALIZED_EXACT,
+                            canonical_product_id=None,
+                            confidence=1.0,
+                            evidence=tuple(
+                                EvidenceItem(
+                                    source="policy",
+                                    key="pre_accept_review",
+                                    value=reason,
+                                )
+                                for reason in review_reasons
+                            ),
+                            policy_reasons=review_reasons,
+                            candidates=(_exact_candidate(product),),
+                        )
+
                     conflicts = _critical_attribute_conflicts(line, product)
                     if conflicts:
                         return ProductIdentityDecision(
