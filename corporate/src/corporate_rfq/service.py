@@ -68,9 +68,7 @@ def _exact_candidate(product: ProductRecord) -> ProductCandidate:
         product=product,
         relation=MatchRelation.NORMALIZED_EXACT,
         score=1.0,
-        evidence=(
-            EvidenceItem(source="catalog", key="canonical_sku", value=product.sku),
-        ),
+        evidence=(EvidenceItem(source="catalog", key="canonical_sku", value=product.sku),),
     )
 
 
