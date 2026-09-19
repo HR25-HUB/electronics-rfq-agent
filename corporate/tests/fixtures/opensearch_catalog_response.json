@@ -1,0 +1,38 @@
+{
+  "hits": {
+    "hits": [
+      {
+        "_id": "abb-s203-c16",
+        "_score": 12.75,
+        "_source": {
+          "id": "ABB:S203-C16",
+          "sku": "S203-C16",
+          "name": "ABB S203-C16 circuit breaker 3P C16",
+          "brand": "ABB",
+          "category": "circuit_breaker",
+          "attributes": [
+            {"key": "poles", "value": "3P"},
+            {"key": "current", "value": "16A"},
+            {"key": "curve", "value": "C"}
+          ]
+        }
+      },
+      {
+        "_id": "abb-s203-c20",
+        "_score": 7.42,
+        "_source": {
+          "id": "ABB:S203-C20",
+          "sku": "S203-C20",
+          "name": "ABB S203-C20 circuit breaker 3P C20",
+          "brand": "ABB",
+          "category": "circuit_breaker",
+          "attributes": [
+            {"key": "poles", "value": "3P"},
+            {"key": "current", "value": "20A"},
+            {"key": "curve", "value": "C"}
+          ]
+        }
+      }
+    ]
+  }
+}
