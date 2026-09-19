@@ -1,0 +1,35 @@
+name: Security lock refresh
+
+on:
+  push:
+    branches:
+      - chore/security-baseline-2026-09
+
+jobs:
+  refresh-lock:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+
+      - name: Refresh anyio in lockfile
+        run: uv lock --upgrade-package anyio
+
+      - name: Show anyio resolution
+        run: |
+          git diff -- uv.lock
+          grep -A 8 -B 2 'name = "anyio"' uv.lock
+
+      - name: Upload refreshed lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: refreshed-uv-lock
+          path: uv.lock
+          if-no-files-found: error
