@@ -142,10 +142,6 @@ def test_transport_failure_becomes_catalog_unavailable(method: str) -> None:
 
 def test_public_adapter_surface_is_read_only() -> None:
     forbidden_prefixes = ("create", "update", "delete", "write", "save", "upsert", "mutate")
-    public_names = {
-        name
-        for name in dir(CatalogAppReadOnlyAdapter)
-        if not name.startswith("_")
-    }
+    public_names = {name for name in dir(CatalogAppReadOnlyAdapter) if not name.startswith("_")}
 
     assert not any(name.startswith(forbidden_prefixes) for name in public_names)
