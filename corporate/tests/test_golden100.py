@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 from collections import Counter
 from pathlib import Path
 
