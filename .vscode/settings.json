@@ -1,0 +1,17 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.ruff": "explicit",
+    "source.organizeImports.ruff": "explicit"
+  },
+  "files.eol": "\n",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": ["corporate/tests"],
+  "python.analysis.typeCheckingMode": "basic",
+  "ruff.enable": true,
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "github.copilot.chat.agent.modelDetails.enabled": true,
+  "github.copilot.chat.organizationInstructions.enabled": true,
+  "github.copilot.chat.organizationCustomAgents.enabled": true
+}

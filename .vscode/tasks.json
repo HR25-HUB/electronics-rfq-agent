@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "RFQ: bootstrap",
+      "type": "shell",
+      "command": "bash scripts/bootstrap.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "RFQ: corporate quality",
+      "type": "shell",
+      "command": "cd corporate && uv run ruff format --check . && uv run ruff check . && uv run pyrefly check && uv run pytest",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "RFQ: Golden 100",
+      "type": "shell",
+      "command": "cd corporate && uv run python scripts/evaluate_golden.py tests/golden/golden100-adversarial.jsonl",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "RFQ: full checks",
+      "type": "shell",
+      "command": "bash scripts/check.sh",
+      "group": {"kind": "test", "isDefault": true},
+      "problemMatcher": []
+    }
+  ]
+}

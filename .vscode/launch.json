@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Golden RFQ 100 evaluator",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/corporate/scripts/evaluate_golden.py",
+      "args": ["tests/golden/golden100-adversarial.jsonl"],
+      "cwd": "${workspaceFolder}/corporate",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Manual OpenSearch probe",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/corporate/scripts/live_opensearch_probe.py",
+      "cwd": "${workspaceFolder}/corporate",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/corporate/.env"
+    }
+  ]
+}

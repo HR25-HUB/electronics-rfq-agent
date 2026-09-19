@@ -1,0 +1,10 @@
+{
+  "folders": [
+    {"name": "Electronics RFQ Agent", "path": "."},
+    {"name": "Corporate Product Identity", "path": "corporate"}
+  ],
+  "settings": {
+    "files.eol": "\n",
+    "python.testing.pytestEnabled": true
+  }
+}
