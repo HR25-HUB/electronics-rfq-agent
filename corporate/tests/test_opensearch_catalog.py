@@ -108,9 +108,7 @@ def test_transport_failure_becomes_catalog_unavailable(operation: str) -> None:
 def test_public_adapter_surface_is_read_only() -> None:
     forbidden = ("create", "update", "delete", "write", "save", "upsert", "mutate", "bulk")
     public_names = {
-        name
-        for name in dir(OpenSearchCatalogReadOnlyAdapter)
-        if not name.startswith("_")
+        name for name in dir(OpenSearchCatalogReadOnlyAdapter) if not name.startswith("_")
     }
 
     assert not any(name.startswith(forbidden) for name in public_names)
