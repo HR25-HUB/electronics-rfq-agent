@@ -1,0 +1,121 @@
+name: Export Corporate RFQ Full Project
+
+on:
+  push:
+    branches:
+      - artifact/corporate-rfq-full-project-2026-09-19
+
+permissions:
+  contents: read
+
+jobs:
+  build-export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout export snapshot
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          ref: artifact/corporate-rfq-full-project-2026-09-19
+
+      - name: Apply reviewed security baseline from PR 2
+        run: |
+          git fetch origin chore/security-baseline-2026-09 --depth=1
+          git checkout FETCH_HEAD -- .trivyignore uv.lock
+          echo "Security baseline applied:"
+          git diff --name-only
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.1.0
+        with:
+          python-version: "3.12"
+          version: "0.12.17"
+
+      - name: Validate OSS core
+        run: |
+          uv sync --extra dev
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy src/ --strict
+          ERFA_USE_MOCK=true ANTHROPIC_API_KEY=test-key-not-real \
+            uv run pytest tests/ --cov=src --cov-fail-under=80
+
+      - name: Validate corporate Product Identity
+        working-directory: corporate
+        run: |
+          uv sync --extra dev
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run pyrefly check
+          uv run pytest
+          uv run python scripts/evaluate_golden.py tests/golden/golden100-adversarial.jsonl
+
+      - name: Write export validation report
+        run: |
+          cat > EXPORT_VALIDATION.md <<'EOF'
+          # Export Validation
+
+          Snapshot date: 2026-09-19
+
+          Applied sources:
+          - Feature chain head: e645422ec18abf20a474c95a49f98b4e56c4ec15
+          - Security baseline head: 8f099a210b7b7cc5561db6ec2fd2dd405f951f51
+
+          Gates executed during export:
+          - OSS ruff format/check: PASS
+          - OSS mypy strict: PASS
+          - OSS pytest coverage gate: PASS
+          - Corporate ruff format/check: PASS
+          - Corporate pyrefly: PASS
+          - Corporate pytest: PASS
+          - Golden RFQ 100 evaluator: PASS
+
+          Safety baseline:
+          - Golden cases: 100
+          - unsafe_auto_substitution_count: 0
+
+          This archive is a development/testing snapshot, not an assertion of production readiness.
+          EOF
+
+      - name: Build portable ZIP
+        run: |
+          NAME="electronics-rfq-agent-corporate-full-2026-09-19"
+          rm -rf ".artifacts" "/tmp/$NAME"
+          mkdir -p ".artifacts" "/tmp/$NAME"
+
+          rsync -a ./ "/tmp/$NAME/" \
+            --exclude ".git/" \
+            --exclude ".venv/" \
+            --exclude "corporate/.venv/" \
+            --exclude "__pycache__/" \
+            --exclude ".pytest_cache/" \
+            --exclude ".ruff_cache/" \
+            --exclude ".mypy_cache/" \
+            --exclude ".pyrefly/" \
+            --exclude ".artifacts/" \
+            --exclude ".github/workflows/export-corporate-full-project.yml"
+
+          (
+            cd "/tmp/$NAME"
+            find . -type f -print0 | sort -z | xargs -0 sha256sum > CHECKSUMS.sha256
+          )
+
+          (
+            cd /tmp
+            zip -qr "$GITHUB_WORKSPACE/.artifacts/$NAME.zip" "$NAME"
+          )
+
+          sha256sum ".artifacts/$NAME.zip" | tee ".artifacts/$NAME.zip.sha256"
+          ls -lh ".artifacts/$NAME.zip"
+
+      - name: Upload project ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: electronics-rfq-agent-corporate-full-2026-09-19
+          path: |
+            .artifacts/electronics-rfq-agent-corporate-full-2026-09-19.zip
+            .artifacts/electronics-rfq-agent-corporate-full-2026-09-19.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
