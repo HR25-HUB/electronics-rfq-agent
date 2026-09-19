@@ -1,0 +1,49 @@
+name: Live OpenSearch Read Probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: One authorized read-only RFQ probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: rfq-readonly
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install corporate RFQ package
+        working-directory: corporate
+        run: uv sync --extra dev
+
+      - name: Validate live probe configuration
+        env:
+          OPENSEARCH_URL: ${{ secrets.OPENSEARCH_URL }}
+          RFQ_LIVE_PROBE_LINE: ${{ secrets.RFQ_LIVE_PROBE_LINE }}
+        run: |
+          if [ -z "$OPENSEARCH_URL" ]; then
+            echo "OPENSEARCH_URL environment secret is not configured" >&2
+            exit 2
+          fi
+          if [ -z "$RFQ_LIVE_PROBE_LINE" ]; then
+            echo "RFQ_LIVE_PROBE_LINE environment secret is not configured" >&2
+            exit 2
+          fi
+
+      - name: Execute one read-only Product Identity probe
+        working-directory: corporate
+        env:
+          OPENSEARCH_URL: ${{ secrets.OPENSEARCH_URL }}
+          OPENSEARCH_AUTHORIZATION: ${{ secrets.OPENSEARCH_AUTHORIZATION }}
+          OPENSEARCH_TIMEOUT_SECONDS: "10"
+          RFQ_LIVE_PROBE_LINE: ${{ secrets.RFQ_LIVE_PROBE_LINE }}
+        run: uv run python scripts/live_opensearch_probe.py
