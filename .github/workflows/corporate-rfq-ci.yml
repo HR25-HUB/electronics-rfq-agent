@@ -36,3 +36,9 @@ jobs:
       - name: Tests
         working-directory: corporate
         run: uv run pytest
+      - name: Golden seed evaluation
+        working-directory: corporate
+        run: uv run python scripts/evaluate_golden.py tests/golden/seed.jsonl
+      - name: Golden RFQ 100 adversarial evaluation
+        working-directory: corporate
+        run: uv run python scripts/evaluate_golden.py tests/golden/golden100-adversarial.jsonl
