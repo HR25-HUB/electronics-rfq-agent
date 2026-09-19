@@ -1,0 +1,1 @@
+Perform a read-only review of the current diff. Use BLOCKER/HIGH/MEDIUM/LOW/NIT. Pay special attention to candidate != decision, analogue handling, quantity ambiguity, technical failure classification, secrets, audit evidence and Golden RFQ regression risk. Do not edit code.

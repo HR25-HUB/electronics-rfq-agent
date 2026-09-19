@@ -1,0 +1,1 @@
+Plan one small vertical slice for the requested change. Read AGENTS.md and repository instructions first. Return Problem → Evidence → Assumptions → Boundaries → Contracts → Tests → Risks → Files → DoD. Do not edit code.
