@@ -31,6 +31,27 @@ class CatalogPort(Protocol):
     ) -> list[ProductCandidate]: ...
 
 
+_CRITICAL_ATTRIBUTES = ("poles", "current")
+
+
+def _critical_attribute_conflicts(
+    line: NormalizedRFQLine, product: ProductRecord
+) -> tuple[EvidenceItem, ...]:
+    conflicts: list[EvidenceItem] = []
+    for key in _CRITICAL_ATTRIBUTES:
+        requested = line.attributes.get(key)
+        catalog_value = product.attributes.get(key)
+        if requested and catalog_value and requested != catalog_value:
+            conflicts.append(
+                EvidenceItem(
+                    source="policy",
+                    key=f"critical_attribute_conflict.{key}",
+                    value=f"requested={requested};catalog={catalog_value}",
+                )
+            )
+    return tuple(conflicts)
+
+
 class ResolveProductIdentity:
     def __init__(self, catalog: CatalogPort) -> None:
         self._catalog = catalog
@@ -54,6 +75,21 @@ class ResolveProductIdentity:
                     manufacturer=line.manufacturer,
                 )
                 if product is not None:
+                    conflicts = _critical_attribute_conflicts(line, product)
+                    if conflicts:
+                        return ProductIdentityDecision(
+                            rfq_id=line.rfq_id,
+                            line_id=line.line_id,
+                            status=DecisionStatus.REJECT,
+                            relation=MatchRelation.NORMALIZED_EXACT,
+                            canonical_product_id=None,
+                            confidence=0.0,
+                            evidence=conflicts,
+                            policy_reasons=(
+                                "critical attribute conflict blocks automatic product identity",
+                            ),
+                        )
+
                     return ProductIdentityDecision(
                         rfq_id=line.rfq_id,
                         line_id=line.line_id,

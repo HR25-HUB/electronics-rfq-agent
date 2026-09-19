@@ -56,3 +56,31 @@ def test_review_event_requires_human_approval() -> None:
     assert event.schema_version == "1.0.0"
     assert event.risk.requires_human_approval is True
     assert event.idempotency_key == "RFQ-005:1:product-identity:v1"
+
+
+def test_exact_mpn_with_pole_conflict_is_rejected() -> None:
+    result = ResolveProductIdentity(FakeCatalog()).execute(
+        RawRFQLine(
+            rfq_id="RFQ-006",
+            line_id="1",
+            raw_text="ABB S203 C16 автомат 1п 16А — 10 шт",
+        )
+    )
+    assert isinstance(result, ProductIdentityDecision)
+    assert result.status == DecisionStatus.REJECT
+    assert result.canonical_product_id is None
+    assert any("poles" in item.key for item in result.evidence)
+
+
+def test_exact_mpn_with_current_conflict_is_rejected() -> None:
+    result = ResolveProductIdentity(FakeCatalog()).execute(
+        RawRFQLine(
+            rfq_id="RFQ-007",
+            line_id="1",
+            raw_text="ABB S203 C16 автомат 3п 20А — 10 шт",
+        )
+    )
+    assert isinstance(result, ProductIdentityDecision)
+    assert result.status == DecisionStatus.REJECT
+    assert result.canonical_product_id is None
+    assert any("current" in item.key for item in result.evidence)
