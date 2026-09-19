@@ -1,7 +1,8 @@
+# ruff: noqa: RUF001
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Literal
 from uuid import UUID, uuid4
@@ -104,7 +105,7 @@ class ProductIdentityDecidedEvent(BaseModel):
     schema_version: str = "1.0.0"
     event_id: UUID = Field(default_factory=uuid4)
     event_type: Literal["rfq.product_identity.decided"] = "rfq.product_identity.decided"
-    occurred_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    occurred_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     producer: str = "corporate-rfq-product-identity"
     trace_id: UUID = Field(default_factory=uuid4)
     idempotency_key: str
@@ -171,6 +172,8 @@ def normalize_rfq_line(raw: RawRFQLine) -> NormalizedRFQLine:
         part_number_normalized=part_norm,
         quantity=quantity,
         uom="pcs",
-        category="circuit_breaker" if "АВТОМАТ" in upper or "CIRCUIT BREAKER" in upper else None,
+        category=(
+            "circuit_breaker" if "АВТОМАТ" in upper or "CIRCUIT BREAKER" in upper else None
+        ),
         attributes=attributes,
     )

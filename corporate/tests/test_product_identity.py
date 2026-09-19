@@ -1,3 +1,4 @@
+# ruff: noqa: RUF001
 from corporate_rfq.models import (
     DecisionStatus,
     FailureCode,
