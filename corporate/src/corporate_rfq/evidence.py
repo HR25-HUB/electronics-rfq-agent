@@ -130,9 +130,7 @@ def _evaluate_case(case: GoldenCase, resolver: ProductIdentityResolver) -> CaseE
             predicted_product_id=result.canonical_product_id,
         )
 
-    passed = (
-        case.expected_kind == "failure" and result.failure_code == case.expected_failure_code
-    )
+    passed = case.expected_kind == "failure" and result.failure_code == case.expected_failure_code
     return CaseEvaluation(
         case_id=case.case_id,
         passed=passed,
@@ -148,23 +146,17 @@ def evaluate_golden_cases(
 ) -> tuple[GoldenMetrics, tuple[CaseEvaluation, ...]]:
     evaluations = tuple(_evaluate_case(case, resolver) for case in cases)
 
-    accepted_count = sum(
-        item.predicted_status == DecisionStatus.ACCEPT for item in evaluations
-    )
+    accepted_count = sum(item.predicted_status == DecisionStatus.ACCEPT for item in evaluations)
     review_required_count = sum(
         item.predicted_status == DecisionStatus.REVIEW_REQUIRED for item in evaluations
     )
-    rejected_count = sum(
-        item.predicted_status == DecisionStatus.REJECT for item in evaluations
-    )
+    rejected_count = sum(item.predicted_status == DecisionStatus.REJECT for item in evaluations)
     failure_count = sum(item.predicted_kind == "failure" for item in evaluations)
     passed_cases = sum(item.passed for item in evaluations)
     unsafe_count = sum(item.unsafe_auto_substitution for item in evaluations)
 
     correct_accepts = sum(
-        item.predicted_status == DecisionStatus.ACCEPT
-        and item.passed
-        for item in evaluations
+        item.predicted_status == DecisionStatus.ACCEPT and item.passed for item in evaluations
     )
     precision = correct_accepts / accepted_count if accepted_count else None
     total = len(evaluations)
