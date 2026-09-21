@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
-from uuid import UUID
-
 import pytest
 
 from electronics_rfq_agent.procurement.domain.models import (
@@ -22,10 +21,10 @@ from electronics_rfq_agent.procurement.domain.state_machine import (
 )
 
 
-RFQ_LINE_ID = UUID("00000000-0000-0000-0000-000000000001")
-QUOTE_ID = UUID("00000000-0000-0000-0000-000000000010")
-DOCUMENT_ID = UUID("00000000-0000-0000-0000-000000000100")
-QUOTE_LINE_ID = UUID("00000000-0000-0000-0000-000000000200")
+RFQ_LINE_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
+QUOTE_ID = uuid.UUID("00000000-0000-0000-0000-000000000010")
+DOCUMENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000100")
+QUOTE_LINE_ID = uuid.UUID("00000000-0000-0000-0000-000000000200")
 
 
 def requested_line() -> SupplierRFQLine:
@@ -43,7 +42,7 @@ def requested_line() -> SupplierRFQLine:
 def evidence(
     value: str,
     *,
-    document_id: UUID = DOCUMENT_ID,
+    document_id: uuid.UUID = DOCUMENT_ID,
     row: int = 2,
 ) -> SourceEvidence:
     return SourceEvidence(
@@ -125,7 +124,7 @@ def test_g003_moq_mismatch_requires_review() -> None:
 
 
 def test_g004_conflicting_evidence_requires_review() -> None:
-    second_document = UUID("00000000-0000-0000-0000-000000000101")
+    second_document = uuid.UUID("00000000-0000-0000-0000-000000000101")
     result, reasons = evaluate_candidate(
         requested_line(),
         quote_line(
