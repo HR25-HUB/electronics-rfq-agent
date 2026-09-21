@@ -1,11 +1,10 @@
 from __future__ import annotations
 
+import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Annotated
-from uuid import UUID
-
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
@@ -74,7 +73,7 @@ class AwardReason(str, Enum):
 class SourceEvidence(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    document_id: UUID
+    document_id: uuid.UUID
     sha256: str = Field(min_length=64, max_length=64)
     filename: str = Field(min_length=1)
     mime_type: str = Field(min_length=1)
@@ -104,7 +103,7 @@ class SourceEvidence(BaseModel):
 class SupplierRFQLine(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    id: UUID
+    id: uuid.UUID
     line_no: int = Field(ge=1)
 
     requested_part_number: str = Field(min_length=1)
@@ -127,15 +126,15 @@ class OfferedIdentity(BaseModel):
 
     relation: IdentityRelation
     confidence: float = Field(ge=0, le=1)
-    evidence_ids: tuple[UUID, ...] = ()
+    evidence_ids: tuple[uuid.UUID, ...] = ()
 
 
 class SupplierQuoteLine(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    id: UUID
-    supplier_quote_id: UUID
-    supplier_rfq_line_id: UUID
+    id: uuid.UUID
+    supplier_quote_id: uuid.UUID
+    supplier_rfq_line_id: uuid.UUID
 
     offered_identity: OfferedIdentity
 
@@ -178,10 +177,10 @@ class SupplierQuoteLine(BaseModel):
 class SupplierQuote(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    id: UUID
-    supplier_rfq_id: UUID
-    supplier_inquiry_id: UUID
-    supplier_id: UUID
+    id: uuid.UUID
+    supplier_rfq_id: uuid.UUID
+    supplier_inquiry_id: uuid.UUID
+    supplier_id: uuid.UUID
 
     supplier_quote_number: str | None = None
     revision: int = Field(default=1, ge=1)
@@ -196,7 +195,7 @@ class SupplierQuote(BaseModel):
 
     status: SupplierQuoteStatus
     lines: tuple[SupplierQuoteLine, ...]
-    source_document_ids: tuple[UUID, ...]
+    source_document_ids: tuple[uuid.UUID, ...]
 
     @field_validator("currency")
     @classmethod
@@ -223,7 +222,7 @@ class SupplierQuote(BaseModel):
 class ComparisonCandidate(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    supplier_quote_line_id: UUID
+    supplier_quote_line_id: uuid.UUID
     eligibility: Eligibility
 
     landed_cost: Decimal | None = None
@@ -232,23 +231,23 @@ class ComparisonCandidate(BaseModel):
 
     commercial_score: float | None = Field(default=None, ge=0, le=100)
     rejection_reasons: tuple[str, ...] = ()
-    evidence_ids: tuple[UUID, ...] = ()
+    evidence_ids: tuple[uuid.UUID, ...] = ()
 
 
 class CommercialComparison(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    id: UUID
-    supplier_rfq_line_id: UUID
+    id: uuid.UUID
+    supplier_rfq_line_id: uuid.UUID
 
     comparison_version: int = Field(ge=1)
     policy_version: str = Field(min_length=1)
 
     candidates: tuple[ComparisonCandidate, ...]
-    recommended_quote_line_id: UUID | None = None
+    recommended_quote_line_id: uuid.UUID | None = None
 
     created_at: datetime
-    trace_id: UUID
+    trace_id: uuid.UUID
 
     @model_validator(mode="after")
     def recommendation_must_be_eligible(self) -> CommercialComparison:
@@ -266,12 +265,12 @@ class CommercialComparison(BaseModel):
 class AwardDecision(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    id: UUID
-    supplier_rfq_line_id: UUID
-    comparison_id: UUID
+    id: uuid.UUID
+    supplier_rfq_line_id: uuid.UUID
+    comparison_id: uuid.UUID
 
-    recommended_quote_line_id: UUID | None = None
-    selected_quote_line_id: UUID | None = None
+    recommended_quote_line_id: uuid.UUID | None = None
+    selected_quote_line_id: uuid.UUID | None = None
 
     outcome: AwardOutcome
     reason_code: AwardReason
@@ -279,10 +278,10 @@ class AwardDecision(BaseModel):
 
     policy_version: str = Field(min_length=1)
 
-    decided_by: UUID
+    decided_by: uuid.UUID
     decided_at: datetime
     is_override: bool
-    trace_id: UUID
+    trace_id: uuid.UUID
 
     @model_validator(mode="after")
     def validate_selection(self) -> AwardDecision:
