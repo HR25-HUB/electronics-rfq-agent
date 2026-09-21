@@ -160,10 +160,7 @@ class SupplierQuoteLine(BaseModel):
     @classmethod
     def normalize_currency(cls, value: str) -> str:
         normalized = value.strip().upper()
-        if (
-            len(normalized) != CURRENCY_CODE_LENGTH
-            or not normalized.isalpha()
-        ):
+        if len(normalized) != CURRENCY_CODE_LENGTH or not normalized.isalpha():
             raise ValueError("currency must be a three-letter alphabetic code")
         return normalized
 
