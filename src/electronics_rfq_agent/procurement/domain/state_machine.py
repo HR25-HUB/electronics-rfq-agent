@@ -3,7 +3,7 @@ from __future__ import annotations
 from electronics_rfq_agent.procurement.domain.models import SupplierRFQStatus
 
 
-class InvalidSupplierRFQTransition(ValueError):
+class InvalidSupplierRFQTransitionError(ValueError):
     """Raised when a Supplier RFQ lifecycle transition is not permitted."""
 
 
@@ -74,22 +74,22 @@ def transition_supplier_rfq(
     supplier_count: int,
 ) -> SupplierRFQStatus:
     if target not in allowed_transitions(current):
-        raise InvalidSupplierRFQTransition(
+        raise InvalidSupplierRFQTransitionError(
             f"transition {current.value} -> {target.value} is not allowed"
         )
 
     if target is SupplierRFQStatus.READY and line_count < 1:
-        raise InvalidSupplierRFQTransition(
+        raise InvalidSupplierRFQTransitionError(
             "Supplier RFQ requires at least one line before READY"
         )
 
     if target is SupplierRFQStatus.SENT:
         if line_count < 1:
-            raise InvalidSupplierRFQTransition(
+            raise InvalidSupplierRFQTransitionError(
                 "Supplier RFQ requires at least one line before SENT"
             )
         if supplier_count < 1:
-            raise InvalidSupplierRFQTransition(
+            raise InvalidSupplierRFQTransitionError(
                 "Supplier RFQ requires at least one supplier before SENT"
             )
 
