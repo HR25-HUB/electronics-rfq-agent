@@ -65,7 +65,5 @@ def evaluate_candidate(
 
 
 def extended_cost(line: SupplierQuoteLine) -> Decimal:
-    unit_cost = line.landed_unit_cost or (
-        line.unit_price + line.freight_allocated
-    )
+    unit_cost = line.landed_unit_cost or (line.unit_price + line.freight_allocated)
     return unit_cost * line.quoted_quantity
