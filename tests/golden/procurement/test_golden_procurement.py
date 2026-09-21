@@ -185,12 +185,8 @@ def test_supplier_quote_rejects_line_from_another_quote() -> None:
     ):
         SupplierQuote(
             id=uuid.UUID("00000000-0000-0000-0000-000000000011"),
-            supplier_rfq_id=uuid.UUID(
-                "00000000-0000-0000-0000-000000000020"
-            ),
-            supplier_inquiry_id=uuid.UUID(
-                "00000000-0000-0000-0000-000000000021"
-            ),
+            supplier_rfq_id=uuid.UUID("00000000-0000-0000-0000-000000000020"),
+            supplier_inquiry_id=uuid.UUID("00000000-0000-0000-0000-000000000021"),
             supplier_id=uuid.UUID("00000000-0000-0000-0000-000000000022"),
             received_at=datetime(2026, 9, 21, tzinfo=timezone.utc),
             currency="EUR",
@@ -228,9 +224,7 @@ def test_approved_award_requires_selected_quote() -> None:
         AwardDecision(
             id=uuid.UUID("00000000-0000-0000-0000-000000000040"),
             supplier_rfq_line_id=RFQ_LINE_ID,
-            comparison_id=uuid.UUID(
-                "00000000-0000-0000-0000-000000000030"
-            ),
+            comparison_id=uuid.UUID("00000000-0000-0000-0000-000000000030"),
             recommended_quote_line_id=QUOTE_LINE_ID,
             outcome=AwardOutcome.APPROVED,
             reason_code=AwardReason.BEST_LANDED_COST,
@@ -252,9 +246,7 @@ def test_award_override_must_match_selected_vs_recommended() -> None:
         AwardDecision(
             id=uuid.UUID("00000000-0000-0000-0000-000000000042"),
             supplier_rfq_line_id=RFQ_LINE_ID,
-            comparison_id=uuid.UUID(
-                "00000000-0000-0000-0000-000000000030"
-            ),
+            comparison_id=uuid.UUID("00000000-0000-0000-0000-000000000030"),
             recommended_quote_line_id=QUOTE_LINE_ID,
             selected_quote_line_id=selected,
             outcome=AwardOutcome.APPROVED,
