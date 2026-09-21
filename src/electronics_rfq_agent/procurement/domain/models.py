@@ -8,7 +8,6 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-
 PositiveDecimal = Annotated[Decimal, Field(gt=Decimal("0"))]
 NonNegativeDecimal = Annotated[Decimal, Field(ge=Decimal("0"))]
 CURRENCY_CODE_LENGTH = 3
