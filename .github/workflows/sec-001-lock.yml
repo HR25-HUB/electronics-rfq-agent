@@ -28,7 +28,22 @@ jobs:
         run: |
           ! grep -q 'name = "crewai"' uv.lock
           ! grep -q 'name = "chromadb"' uv.lock
-          grep -A2 'name = "anyio"' uv.lock | grep 'version = "4.14.2"'
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          content = Path("uv.lock").read_text()
+          match = re.search(
+              r'\\[\\[package\\]\\]\\nname = "anyio"\\nversion = "([0-9.]+)"',
+              content,
+          )
+          if match is None:
+              raise SystemExit("anyio not found in uv.lock")
+          version = tuple(int(part) for part in match.group(1).split("."))
+          if version < (4, 14, 2):
+              raise SystemExit(f"unsafe anyio version: {match.group(1)}")
+          print(f"safe anyio version: {match.group(1)}")
+          PY
 
       - name: Commit regenerated lock
         run: |
