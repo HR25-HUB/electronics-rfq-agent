@@ -7,11 +7,18 @@ from decimal import Decimal
 import pytest
 
 from electronics_rfq_agent.procurement.domain.models import (
+    AwardDecision,
+    AwardOutcome,
+    AwardReason,
+    CommercialComparison,
+    ComparisonCandidate,
     Eligibility,
     IdentityRelation,
     OfferedIdentity,
     SourceEvidence,
+    SupplierQuote,
     SupplierQuoteLine,
+    SupplierQuoteStatus,
     SupplierRFQLine,
     SupplierRFQStatus,
 )
@@ -157,5 +164,117 @@ def test_supplier_rfq_rejects_illegal_transition() -> None:
             SupplierRFQStatus.DRAFT,
             SupplierRFQStatus.AWARDED,
             line_count=1,
+            supplier_count=3,
+        )
+
+
+def test_quote_line_requires_unit_price_evidence() -> None:
+    with pytest.raises(ValueError, match="unit_price requires source evidence"):
+        quote_line(
+            relation=IdentityRelation.EXACT,
+            quote_evidence=(),
+        )
+
+
+def test_supplier_quote_rejects_line_from_another_quote() -> None:
+    line = quote_line(relation=IdentityRelation.EXACT)
+
+    with pytest.raises(
+        ValueError,
+        match="all supplier quote lines must reference this quote",
+    ):
+        SupplierQuote(
+            id=uuid.UUID("00000000-0000-0000-0000-000000000011"),
+            supplier_rfq_id=uuid.UUID(
+                "00000000-0000-0000-0000-000000000020"
+            ),
+            supplier_inquiry_id=uuid.UUID(
+                "00000000-0000-0000-0000-000000000021"
+            ),
+            supplier_id=uuid.UUID("00000000-0000-0000-0000-000000000022"),
+            received_at=datetime(2026, 9, 21, tzinfo=timezone.utc),
+            currency="EUR",
+            status=SupplierQuoteStatus.RECEIVED,
+            lines=(line,),
+            source_document_ids=(DOCUMENT_ID,),
+        )
+
+
+def test_comparison_cannot_recommend_review_required_candidate() -> None:
+    candidate = ComparisonCandidate(
+        supplier_quote_line_id=QUOTE_LINE_ID,
+        eligibility=Eligibility.REVIEW_REQUIRED,
+        rejection_reasons=("IDENTITY_SUBSTITUTE",),
+    )
+
+    with pytest.raises(ValueError, match="recommended quote line must be eligible"):
+        CommercialComparison(
+            id=uuid.UUID("00000000-0000-0000-0000-000000000030"),
+            supplier_rfq_line_id=RFQ_LINE_ID,
+            comparison_version=1,
+            policy_version="rpo-001-v0.1",
+            candidates=(candidate,),
+            recommended_quote_line_id=QUOTE_LINE_ID,
+            created_at=datetime(2026, 9, 21, tzinfo=timezone.utc),
+            trace_id=uuid.UUID("00000000-0000-0000-0000-000000000031"),
+        )
+
+
+def test_approved_award_requires_selected_quote() -> None:
+    with pytest.raises(
+        ValueError,
+        match="approved award requires selected_quote_line_id",
+    ):
+        AwardDecision(
+            id=uuid.UUID("00000000-0000-0000-0000-000000000040"),
+            supplier_rfq_line_id=RFQ_LINE_ID,
+            comparison_id=uuid.UUID(
+                "00000000-0000-0000-0000-000000000030"
+            ),
+            recommended_quote_line_id=QUOTE_LINE_ID,
+            outcome=AwardOutcome.APPROVED,
+            reason_code=AwardReason.BEST_LANDED_COST,
+            policy_version="rpo-001-v0.1",
+            decided_by=uuid.UUID("00000000-0000-0000-0000-000000000041"),
+            decided_at=datetime(2026, 9, 21, tzinfo=timezone.utc),
+            is_override=False,
+            trace_id=uuid.UUID("00000000-0000-0000-0000-000000000031"),
+        )
+
+
+def test_award_override_must_match_selected_vs_recommended() -> None:
+    selected = uuid.UUID("00000000-0000-0000-0000-000000000201")
+
+    with pytest.raises(
+        ValueError,
+        match="is_override must reflect recommendation/selection difference",
+    ):
+        AwardDecision(
+            id=uuid.UUID("00000000-0000-0000-0000-000000000042"),
+            supplier_rfq_line_id=RFQ_LINE_ID,
+            comparison_id=uuid.UUID(
+                "00000000-0000-0000-0000-000000000030"
+            ),
+            recommended_quote_line_id=QUOTE_LINE_ID,
+            selected_quote_line_id=selected,
+            outcome=AwardOutcome.APPROVED,
+            reason_code=AwardReason.MANUAL_OVERRIDE,
+            policy_version="rpo-001-v0.1",
+            decided_by=uuid.UUID("00000000-0000-0000-0000-000000000041"),
+            decided_at=datetime(2026, 9, 21, tzinfo=timezone.utc),
+            is_override=False,
+            trace_id=uuid.UUID("00000000-0000-0000-0000-000000000031"),
+        )
+
+
+def test_supplier_rfq_cannot_be_ready_without_lines() -> None:
+    with pytest.raises(
+        InvalidSupplierRFQTransitionError,
+        match="at least one line",
+    ):
+        transition_supplier_rfq(
+            SupplierRFQStatus.DRAFT,
+            SupplierRFQStatus.READY,
+            line_count=0,
             supplier_count=3,
         )
