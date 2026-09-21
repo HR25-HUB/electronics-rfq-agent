@@ -91,11 +91,7 @@ def quote_line(
         currency="EUR",
         stock_qty=Decimal("100"),
         lead_time_days=2,
-        evidence=(
-            (evidence("7.91"),)
-            if quote_evidence is None
-            else quote_evidence
-        ),
+        evidence=(evidence("7.91"),) if quote_evidence is None else quote_evidence,
     )
 
 
