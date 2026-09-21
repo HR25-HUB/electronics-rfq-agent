@@ -21,7 +21,6 @@ from electronics_rfq_agent.procurement.domain.state_machine import (
     transition_supplier_rfq,
 )
 
-
 RFQ_LINE_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 QUOTE_ID = uuid.UUID("00000000-0000-0000-0000-000000000010")
 DOCUMENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000100")
