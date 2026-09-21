@@ -15,7 +15,9 @@ from electronics_rfq_agent.procurement.domain.models import (
     SupplierRFQLine,
     SupplierRFQStatus,
 )
-from electronics_rfq_agent.procurement.domain.policy import (\n    evaluate_candidate,\n)
+from electronics_rfq_agent.procurement.domain.policy import (
+    evaluate_candidate,
+)
 from electronics_rfq_agent.procurement.domain.state_machine import (
     InvalidSupplierRFQTransitionError,
     transition_supplier_rfq,
