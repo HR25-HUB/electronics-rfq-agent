@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (\n    BaseModel,\n    ConfigDict,\n    Field,\n    field_validator,\n    model_validator,\n)
 
 
 PositiveDecimal = Annotated[Decimal, Field(gt=Decimal("0"))]
@@ -160,7 +160,7 @@ class SupplierQuoteLine(BaseModel):
     @classmethod
     def normalize_currency(cls, value: str) -> str:
         normalized = value.strip().upper()
-        if len(normalized) != 3 or not normalized.isalpha():
+        if len(normalized) != CURRENCY_CODE_LENGTH or not normalized.isalpha():
             raise ValueError("currency must be a three-letter alphabetic code")
         return normalized
 
@@ -198,7 +198,7 @@ class SupplierQuote(BaseModel):
     @classmethod
     def normalize_currency(cls, value: str) -> str:
         normalized = value.strip().upper()
-        if len(normalized) != 3 or not normalized.isalpha():
+        if len(normalized) != CURRENCY_CODE_LENGTH or not normalized.isalpha():
             raise ValueError("currency must be a three-letter alphabetic code")
         return normalized
 
@@ -289,5 +289,5 @@ class AwardDecision(BaseModel):
             and self.selected_quote_line_id != self.recommended_quote_line_id
         )
         if self.is_override != expected_override:
-            raise ValueError("is_override must reflect recommendation/selection difference")
+            raise ValueError(\n                "is_override must reflect recommendation/selection difference"\n            )
         return self
