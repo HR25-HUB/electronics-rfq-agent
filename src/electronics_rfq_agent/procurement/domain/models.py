@@ -6,11 +6,18 @@ from enum import Enum
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import (\n    BaseModel,\n    ConfigDict,\n    Field,\n    field_validator,\n    model_validator,\n)
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 PositiveDecimal = Annotated[Decimal, Field(gt=Decimal("0"))]
 NonNegativeDecimal = Annotated[Decimal, Field(ge=Decimal("0"))]
+CURRENCY_CODE_LENGTH = 3
 
 
 class IdentityRelation(str, Enum):
@@ -160,7 +167,10 @@ class SupplierQuoteLine(BaseModel):
     @classmethod
     def normalize_currency(cls, value: str) -> str:
         normalized = value.strip().upper()
-        if len(normalized) != CURRENCY_CODE_LENGTH or not normalized.isalpha():
+        if (
+            len(normalized) != CURRENCY_CODE_LENGTH
+            or not normalized.isalpha()
+        ):
             raise ValueError("currency must be a three-letter alphabetic code")
         return normalized
 
@@ -198,7 +208,10 @@ class SupplierQuote(BaseModel):
     @classmethod
     def normalize_currency(cls, value: str) -> str:
         normalized = value.strip().upper()
-        if len(normalized) != CURRENCY_CODE_LENGTH or not normalized.isalpha():
+        if (
+            len(normalized) != CURRENCY_CODE_LENGTH
+            or not normalized.isalpha()
+        ):
             raise ValueError("currency must be a three-letter alphabetic code")
         return normalized
 
@@ -279,15 +292,24 @@ class AwardDecision(BaseModel):
 
     @model_validator(mode="after")
     def validate_selection(self) -> AwardDecision:
-        if self.outcome is AwardOutcome.APPROVED and self.selected_quote_line_id is None:
+        if (
+            self.outcome is AwardOutcome.APPROVED
+            and self.selected_quote_line_id is None
+        ):
             raise ValueError("approved award requires selected_quote_line_id")
-        if self.outcome is AwardOutcome.NO_AWARD and self.selected_quote_line_id is not None:
+        if (
+            self.outcome is AwardOutcome.NO_AWARD
+            and self.selected_quote_line_id is not None
+        ):
             raise ValueError("no-award decision cannot select a quote line")
+
         expected_override = (
             self.selected_quote_line_id is not None
             and self.recommended_quote_line_id is not None
             and self.selected_quote_line_id != self.recommended_quote_line_id
         )
         if self.is_override != expected_override:
-            raise ValueError(\n                "is_override must reflect recommendation/selection difference"\n            )
+            raise ValueError(
+                "is_override must reflect recommendation/selection difference"
+            )
         return self
