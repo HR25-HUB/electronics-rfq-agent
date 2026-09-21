@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from decimal import Decimal
-
 from electronics_rfq_agent.procurement.domain.models import (
     Eligibility,
     IdentityRelation,
@@ -62,8 +60,3 @@ def evaluate_candidate(
         return Eligibility.REVIEW_REQUIRED, tuple(reasons)
 
     return Eligibility.ELIGIBLE, ()
-
-
-def extended_cost(line: SupplierQuoteLine) -> Decimal:
-    unit_cost = line.landed_unit_cost or (line.unit_price + line.freight_allocated)
-    return unit_cost * line.quoted_quantity
