@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
+
 import pytest
 
 from electronics_rfq_agent.procurement.domain.models import (
