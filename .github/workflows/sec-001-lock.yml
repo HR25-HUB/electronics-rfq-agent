@@ -34,7 +34,7 @@ jobs:
 
           content = Path("uv.lock").read_text()
           match = re.search(
-              r'\\[\\[package\\]\\]\\nname = "anyio"\\nversion = "([0-9.]+)"',
+              r'name = "anyio"\\nversion = "([0-9.]+)"',
               content,
           )
           if match is None:
