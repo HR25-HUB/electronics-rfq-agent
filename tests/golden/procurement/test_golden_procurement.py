@@ -49,9 +49,7 @@ def evidence(
         document_id=document_id,
         sha256="a" * 64,
         filename="supplier-offer.xlsx",
-        mime_type=(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ),
+        mime_type=("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
         fact_key="unit_price",
         sheet="Offer",
         row=row,
