@@ -5,6 +5,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Annotated
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
