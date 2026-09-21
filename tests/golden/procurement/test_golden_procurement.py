@@ -15,9 +15,9 @@ from electronics_rfq_agent.procurement.domain.models import (
     SupplierRFQLine,
     SupplierRFQStatus,
 )
-from electronics_rfq_agent.procurement.domain.policy import evaluate_candidate
+from electronics_rfq_agent.procurement.domain.policy import (\n    evaluate_candidate,\n)
 from electronics_rfq_agent.procurement.domain.state_machine import (
-    InvalidSupplierRFQTransition,
+    InvalidSupplierRFQTransitionError,
     transition_supplier_rfq,
 )
 
@@ -143,7 +143,7 @@ def test_g004_conflicting_evidence_requires_review() -> None:
 
 def test_supplier_rfq_cannot_be_sent_without_supplier() -> None:
     with pytest.raises(
-        InvalidSupplierRFQTransition,
+        InvalidSupplierRFQTransitionError,
         match="at least one supplier",
     ):
         transition_supplier_rfq(
@@ -155,7 +155,7 @@ def test_supplier_rfq_cannot_be_sent_without_supplier() -> None:
 
 
 def test_supplier_rfq_rejects_illegal_transition() -> None:
-    with pytest.raises(InvalidSupplierRFQTransition):
+    with pytest.raises(InvalidSupplierRFQTransitionError):
         transition_supplier_rfq(
             SupplierRFQStatus.DRAFT,
             SupplierRFQStatus.AWARDED,
