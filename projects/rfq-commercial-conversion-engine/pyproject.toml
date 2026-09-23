@@ -15,7 +15,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3,<10","ruff>=0.7,<1"]
+dev = [
+  "pytest>=8.3,<10",
+  "pytest-asyncio>=0.24,<1",
+  "httpx>=0.27,<1",
+  "ruff>=0.7,<1"
+]
 
 [project.scripts]
 rfq-cc = "rfq_cc.cli:main"
@@ -26,6 +31,7 @@ packages = ["src/rfq_cc"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 100
