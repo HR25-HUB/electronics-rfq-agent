@@ -1,0 +1,41 @@
+[
+  {
+    "case_id":"GC01",
+    "customer_text":"Подтверждаем заказ по текущему КП.",
+    "response_kind":"APPROVED_FULL",
+    "commitment":"EXPLICIT_ORDER",
+    "expected_action":"PASS_KT37"
+  },
+  {
+    "case_id":"GC02",
+    "customer_text":"Если будет 92 EUR, готовы заказать.",
+    "response_kind":"PRICE_OBJECTION",
+    "commitment":"CONDITIONAL",
+    "target_price":"92",
+    "expected_action":"REPRICE",
+    "expected_return":"KT33"
+  },
+  {
+    "case_id":"GC03",
+    "customer_text":"Берём только 50 из 100 шт.",
+    "response_kind":"APPROVED_PARTIAL",
+    "commitment":"EXPLICIT_ORDER",
+    "expected_action":"REPRICE",
+    "expected_return":"KT33"
+  },
+  {
+    "case_id":"GC04",
+    "customer_text":"Готовы заказать при 30 днях постоплаты.",
+    "response_kind":"PAYMENT_TERMS_OBJECTION",
+    "commitment":"CONDITIONAL",
+    "expected_action":"CHANGE_PAYMENT_TERMS",
+    "expected_return":"KT34"
+  },
+  {
+    "case_id":"GC05",
+    "customer_text":"Спасибо, закупать не будем.",
+    "response_kind":"REJECTED",
+    "commitment":"NONE",
+    "expected_action":"MARK_LOST"
+  }
+]
