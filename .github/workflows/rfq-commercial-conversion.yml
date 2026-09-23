@@ -1,0 +1,35 @@
+name: RFQ Commercial Conversion
+
+on:
+  push:
+    paths:
+      - "projects/rfq-commercial-conversion-engine/**"
+      - ".github/instructions/rfq-commercial-conversion.instructions.md"
+      - ".github/prompts/rfq-commercial-implement.prompt.md"
+      - ".github/prompts/rfq-commercial-review.prompt.md"
+  pull_request:
+    paths:
+      - "projects/rfq-commercial-conversion-engine/**"
+      - ".github/instructions/rfq-commercial-conversion.instructions.md"
+      - ".github/prompts/rfq-commercial-*.prompt.md"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/rfq-commercial-conversion-engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --extra dev
+      - run: uv run ruff check .
+      - run: uv run pytest -q
