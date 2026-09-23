@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rfq-commercial-conversion-engine"
+version = "0.1.0"
+description = "Evidence-backed RFQ commercial conversion engine"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.30,<1",
+  "pydantic>=2.9,<3"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<10","ruff>=0.7,<1"]
+
+[project.scripts]
+rfq-cc = "rfq_cc.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rfq_cc"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E","F","I","UP","B","SIM"]
