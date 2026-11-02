@@ -62,9 +62,9 @@ merge queue compatibility must still be demonstrated before enabling a queue.
 
 ## Ruleset activation and acceptance
 
-`required-ruleset.json` is a reviewable configuration proposal, not an applied
-GitHub setting. An administrator must activate it, bind the required check to
-the GitHub Actions app in the UI, and verify the resulting configuration by API.
+`required-ruleset.json` was applied through the authenticated GitHub CLI as
+ruleset 26348579, then read back through the API. It is active, has no bypass
+actors, and binds the required check to the observed GitHub Actions app (15368).
 It requires PR review, the aggregate delivery check and an up-to-date branch,
 with no bypass actors. Reviewers must independently inspect workflow and policy
 changes; status names alone cannot prevent a malicious rewrite of the gate.
@@ -73,8 +73,13 @@ Do not claim merge blocking merely because YAML or JSON exists. Before declaring
 A1 complete, demonstrate on the real PR that an intentional architecture failure
 makes the required gate fail and GitHub reports merging blocked; restore the
 same PR to its correct commit and obtain a green run and candidate. Do not merge.
-Negative unit controls prove the checker rejects violations; they do not prove
-that repository settings enforce it. No ruleset was applied by this change.
+Negative unit controls prove the checker rejects violations; repository settings
+must also enforce it. On this same real PR, temporary commit
+`f900661e0cb0c2e94095136acb0963a322b7a67e` introduced a model-to-httpx dependency.
+Run 41402909396 rejected it in `Architecture policy`; `NUIF delivery gate` failed
+and the candidate was skipped. With draft status removed, GitHub reported
+`mergeable_state: blocked`. The test commit is reverted before handoff; no merge
+operation was attempted.
 
 ## Verification and use
 
@@ -105,12 +110,35 @@ days; archive audited bundles in the organization's evidence store when adopted.
 - [x] Add digest corruption/missing/empty-artifact tests before implementation.
 - [x] Implement dependency checker and evidence manifest verifier.
 - [x] Integrate gates, frozen dependencies, candidate and always-run aggregate.
-- [ ] Obtain passing source lint/typecheck/tests and candidate CI on the real PR.
-- [ ] Activate and read back the required-check ruleset with administrator access.
-- [ ] Demonstrate a rejected failing commit and restored green commit on the PR.
+- [x] Obtain passing source lint/typecheck/tests on the real PR.
+- [x] Activate and read back the required-check ruleset with administrator access.
+- [x] Demonstrate a rejected architecture violation on the real PR without merging.
+- [ ] Obtain a restored fully green commit and candidate on the PR.
 - [ ] Verify downloaded artifact digests and retain run links as final evidence.
 
 Local installation was attempted twice but PyPI timed out resolving hatchling;
 project typecheck/tests/build are not locally verified. The independent stdlib
 gate tests and architecture check can run without project dependencies. Final
 execution status belongs in the audit report and PR, not inferred from this plan.
+
+## Observed security blocker
+
+Real PR run 41402529268 passed lint, formatting, strict mypy and source tests on
+Python 3.10/3.11/3.12. The Python 3.12 log reports 323 passed, 3 skipped and
+90.39% coverage. Architecture, Gitleaks and both optional extras also passed.
+Existing Trivy scanning rejected vulnerabilities in the unchanged uv.lock;
+the aggregate failed and candidate build was correctly skipped. No verified
+candidate, wheel digest or signed provenance is claimed for this run.
+
+The complete paginated GitHub code-scanning snapshot contains 116 findings:
+10 critical, 52 high, 48 medium and 6 low. These are scanner findings, not
+independently demonstrated exploits. The affected lockfile includes optional
+extras as well as runtime dependencies; triage must retain that distinction.
+
+Dependency remediation must preserve the gate: export the complete findings,
+group by package and installed/fixed version, update affected direct/transitive
+constraints and regenerate uv.lock, then rerun all Python versions and optional
+extras. Check API/behavior compatibility of MCP, PyJWT, HTTP/OAuth libraries and
+document parsers. Do not add a blanket ignore, lower severity, remove scanning,
+or turn a failed build into an approved candidate. The final PR must stay draft
+until security remediation and actual candidate verification succeed.
