@@ -124,3 +124,6 @@ class ERPConfig(BaseModel):
             f"api_key={masked_key!r}, username={self.username!r}, "
             f"password={masked_pwd!r})"
         )
+
+# Temporary NUIF negative control, reverted after blocked-run verification.
+import httpx  # noqa: E402, F401, I001
