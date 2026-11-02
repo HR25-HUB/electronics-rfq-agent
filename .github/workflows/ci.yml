@@ -5,11 +5,20 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
     name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       security-events: write
@@ -27,19 +36,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync --frozen --extra dev
 
       - name: Lint
-        run: uv run ruff check .
+        run: uv run --no-sync ruff check .
 
       - name: Format check
-        run: uv run ruff format --check .
+        run: uv run --no-sync ruff format --check .
 
       - name: Type check
-        run: uv run mypy src/ --strict
+        run: uv run --no-sync mypy src/ --strict
 
       - name: Tests with coverage
-        run: uv run pytest tests/ --cov=src --cov-report=xml --cov-fail-under=80
+        run: uv run --no-sync pytest tests/ --cov=src --cov-report=xml --cov-fail-under=80 --junitxml=junit.xml
         env:
           ERFA_USE_MOCK: "true"
           ANTHROPIC_API_KEY: "test-key-not-real"
@@ -50,6 +59,16 @@ jobs:
         with:
           file: coverage.xml
           fail_ci_if_error: false
+
+      - name: Preserve test reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tests-${{ matrix.python-version }}-${{ github.sha }}
+          path: |
+            junit.xml
+            coverage.xml
+          if-no-files-found: warn
 
       - name: Security scan
         uses: aquasecurity/trivy-action@c07df6fec6fa692e6fd1200d50aaa1fdd66f03c8 # master
@@ -69,6 +88,7 @@ jobs:
   extras-compat:
     name: Optional extras (${{ matrix.extra }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -85,12 +105,12 @@ jobs:
           python-version: "3.12"
 
       - name: Install core + extra
-        run: uv sync --extra dev --extra ${{ matrix.extra }}
+        run: uv sync --frozen --extra dev --extra ${{ matrix.extra }}
 
       - name: Smoke test import (langchain)
         if: matrix.extra == 'langchain'
         run: |
-          uv run python -c "
+          uv run --no-sync python -c "
           import langgraph
           from electronics_rfq_agent import QuoteAgent
           from electronics_rfq_agent.mcp.mock import MockERP
@@ -100,9 +120,106 @@ jobs:
       - name: Smoke test import (agents)
         if: matrix.extra == 'agents'
         run: |
-          uv run python -c "
+          uv run --no-sync python -c "
           from agents import Agent, function_tool
           from electronics_rfq_agent import QuoteAgent
           from electronics_rfq_agent.mcp.mock import MockERP
           print('agents extra OK')
           "
+
+  policy:
+    name: Architecture policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Policy and evidence negative controls
+        run: python3 -m unittest discover -s tools/delivery -v
+      - name: Enforce dependency boundaries
+        run: python3 tools/delivery/architecture.py
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_SUMMARY: "true"
+
+  candidate:
+    name: Verified release candidate
+    needs: [quality, extras-compat, policy, secrets]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen --extra dev
+      - name: Build the exact tested commit
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          uv build
+      - name: Install and test the built wheel
+        shell: bash
+        env:
+          ERFA_USE_MOCK: "true"
+          ANTHROPIC_API_KEY: "test-key-not-real"
+        run: |
+          uv pip install --no-deps --reinstall dist/*.whl
+          .venv/bin/python -c "import electronics_rfq_agent as p; assert 'site-packages' in p.__file__, p.__file__"
+          .venv/bin/erfa --help
+          .venv/bin/python -m pytest tests/ -o addopts='' --cov=electronics_rfq_agent --cov-report=xml:dist/wheel-coverage.xml --cov-fail-under=80 --junitxml=dist/wheel-tests.xml
+      - name: Bind evidence to SHA and distribution digests
+        env:
+          GATE_RESULTS: ${{ toJSON(needs) }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 tools/delivery/evidence.py
+          python3 tools/delivery/evidence.py verify
+          uv export --frozen --no-dev --no-emit-project --format requirements-txt > dist/locked-requirements.txt
+          cp uv.lock dist/uv.lock
+      - name: Preserve candidate and evidence
+        id: artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-candidate-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Record uploaded bundle identity
+        env:
+          ARTIFACT_DIGEST: ${{ steps.artifact.outputs.artifact-digest }}
+          ARTIFACT_URL: ${{ steps.artifact.outputs.artifact-url }}
+        run: |
+          printf 'Candidate source: `%s`\n\nBundle SHA-256: `%s`\n\n[Download evidence](%s)\n' "$GITHUB_SHA" "$ARTIFACT_DIGEST" "$ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+
+  delivery:
+    name: NUIF delivery gate
+    if: always()
+    needs: [quality, extras-compat, policy, secrets, candidate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Reject any failed, cancelled or skipped prerequisite
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          results = json.loads(os.environ['RESULTS'])
+          assert results and all(job['result'] == 'success' for job in results.values()), results
+          PY
