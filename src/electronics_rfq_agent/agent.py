@@ -174,6 +174,19 @@ class QuoteAgent:
                     status="not_found",
                     notes=f"Part {line.part_number!r} not found in ERP catalog",
                 )
+            # DR-001: search results are candidates, not approved substitutes.
+            # Never price or quote a non-exact result without an approval contract.
+            if part.part_number.upper() != line.part_number.upper():
+                return QuoteLineItem(
+                    rfq_line=line,
+                    erp_result=None,
+                    status="not_found",
+                    notes=(
+                        f"Possible alternative {part.part_number!r} for "
+                        f"{line.part_number!r}; manual approval required. "
+                        "No substitute was quoted."
+                    ),
+                )
             cost_price = await self.erp.get_price(part.part_number, line.quantity)
             if cost_price is None:
                 cost_price = part.unit_price

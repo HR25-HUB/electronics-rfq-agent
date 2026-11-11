@@ -1,0 +1,35 @@
+name: NUIF DR-001 Regression
+on:
+  pull_request:
+    paths:
+      - "src/electronics_rfq_agent/agent.py"
+      - "tests/test_dr001_policy.py"
+      - ".github/workflows/dr001-regression.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dr001-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install repository and dev dependencies
+        run: uv sync --extra dev
+      - name: Ruff lint
+        run: uv run ruff check src/electronics_rfq_agent/agent.py tests/test_dr001_policy.py
+      - name: Ruff format
+        run: uv run ruff format --check src/electronics_rfq_agent/agent.py tests/test_dr001_policy.py
+      - name: DR-001 regression
+        env:
+          ANTHROPIC_API_KEY: "test-key-not-real"
+          ERFA_USE_MOCK: "true"
+        run: uv run pytest -q tests/test_dr001_policy.py
+
+      - name: Full repository regression
+        env:
+          ANTHROPIC_API_KEY: "test-key-not-real"
+          ERFA_USE_MOCK: "true"
+        run: uv run pytest -q tests/
