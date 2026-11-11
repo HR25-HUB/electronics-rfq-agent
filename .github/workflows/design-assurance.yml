@@ -28,7 +28,7 @@ jobs:
       - name: Types
         run: .venv/bin/mypy assurance --ignore-missing-imports
       - name: Tests
-        run: .venv/bin/python -m pytest -q tests/test_design_assurance.py
+        run: .venv/bin/python -m pytest --noconftest -q tests/test_design_assurance.py
       - name: Synthetic eval
         run: .venv/bin/python -m assurance.eval_cli evals/nuif_assurance_synthetic.json
   approval:
