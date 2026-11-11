@@ -50,6 +50,4 @@ def test_self_review_is_rejected() -> None:
         completed=True,
     )
     record = _evidence().model_copy(update={"reviews": [review]})
-    assert "review independence not established" in evaluate(
-        record, ROOT, "a" * 40
-    )
+    assert "review independence not established" in evaluate(record, ROOT, "a" * 40)
