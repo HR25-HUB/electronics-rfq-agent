@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from assurance.eval_contract import evaluate_dataset
-from assurance.review_contract import Evidence, Evaluation, Perspective, Review
+from assurance.review_contract import Evaluation, Evidence, Perspective, Review
 from assurance.review_gate import evaluate
 
 ROOT = Path(__file__).resolve().parents[1]
