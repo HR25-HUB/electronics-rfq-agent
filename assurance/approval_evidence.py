@@ -13,6 +13,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 SHA = r"^[0-9a-f]{40}$"
+REVIEW_COUNT = 5
 
 
 class Strict(BaseModel):
@@ -47,12 +48,12 @@ class ApprovalBundle(Strict):
     @model_validator(mode="after")
     def validate_reviewers(self) -> ApprovalBundle:
         perspectives = [item.perspective for item in self.reviews]
-        if len(set(perspectives)) != 5:
+        if len(set(perspectives)) != REVIEW_COUNT:
             raise ValueError("all five perspectives required")
         if any(item.commit_sha != self.subject_sha for item in self.reviews):
             raise ValueError("all reviews must target exact commit")
         identities = [item.reviewer for item in self.reviews]
-        if len(set(identities)) != 5 or self.author in identities:
+        if len(set(identities)) != REVIEW_COUNT or self.author in identities:
             raise ValueError("reviewers must be independent from author and each other")
         if any(item.conclusion != "approve" for item in self.reviews):
             raise ValueError("unresolved reviewer rejection")
@@ -79,7 +80,10 @@ def main() -> int:
         return 1
     print(json.dumps({
         "eligible": False,
-        "reason": "structural validation only; GitHub identities and CI not authenticated",
+        "reason": (
+            "structural validation only; GitHub identities and CI "
+            "not authenticated"
+        ),
     }))
     return 1
 
