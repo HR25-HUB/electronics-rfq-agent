@@ -1,0 +1,243 @@
+{
+  "dataset_id": "NUIF-SDD-ASSURANCE-001.A2-synthetic",
+  "synthetic": true,
+  "cases": [
+    {
+      "id": "SYN-001",
+      "input_part": "RFQ-PART-001",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-001",
+          "manufacturer": null
+        }
+      ],
+      "expected": "matched"
+    },
+    {
+      "id": "SYN-002",
+      "input_part": "RFQ-PART-002",
+      "input_manufacturer": "ACME",
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-002",
+          "manufacturer": "ACME"
+        }
+      ],
+      "expected": "matched"
+    },
+    {
+      "id": "SYN-003",
+      "input_part": "RFQ-PART-003",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-003",
+          "manufacturer": null
+        }
+      ],
+      "expected": "matched"
+    },
+    {
+      "id": "SYN-004",
+      "input_part": "RFQ-PART-004",
+      "input_manufacturer": "ACME",
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-004",
+          "manufacturer": "ACME"
+        }
+      ],
+      "expected": "matched"
+    },
+    {
+      "id": "SYN-005",
+      "input_part": "RFQ-PART-005",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-005",
+          "manufacturer": null
+        }
+      ],
+      "expected": "matched"
+    },
+    {
+      "id": "SYN-006",
+      "input_part": "RFQ-PART-006",
+      "input_manufacturer": "ACME",
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-006",
+          "manufacturer": "ACME"
+        }
+      ],
+      "expected": "matched"
+    },
+    {
+      "id": "SYN-007",
+      "input_part": "RFQ-PART-007",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-007",
+          "manufacturer": null
+        }
+      ],
+      "expected": "matched"
+    },
+    {
+      "id": "SYN-008",
+      "input_part": "RFQ-PART-008",
+      "input_manufacturer": "ACME",
+      "candidates": [],
+      "expected": "not_found"
+    },
+    {
+      "id": "SYN-009",
+      "input_part": "RFQ-PART-009",
+      "input_manufacturer": null,
+      "candidates": [],
+      "expected": "not_found"
+    },
+    {
+      "id": "SYN-010",
+      "input_part": "RFQ-PART-010",
+      "input_manufacturer": "ACME",
+      "candidates": [],
+      "expected": "not_found"
+    },
+    {
+      "id": "SYN-011",
+      "input_part": "RFQ-PART-011",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-011-ALT",
+          "manufacturer": null
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-012",
+      "input_part": "RFQ-PART-012",
+      "input_manufacturer": "ACME",
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-012-ALT",
+          "manufacturer": "ACME"
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-013",
+      "input_part": "RFQ-PART-013",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-013-ALT",
+          "manufacturer": null
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-014",
+      "input_part": "RFQ-PART-014",
+      "input_manufacturer": "ACME",
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-014",
+          "manufacturer": "ACME"
+        },
+        {
+          "part_number": "RFQ-PART-014-ALT",
+          "manufacturer": "ACME"
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-015",
+      "input_part": "RFQ-PART-015",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-015",
+          "manufacturer": null
+        },
+        {
+          "part_number": "RFQ-PART-015-ALT",
+          "manufacturer": null
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-016",
+      "input_part": "RFQ-PART-016",
+      "input_manufacturer": "ACME",
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-016",
+          "manufacturer": "ACME"
+        },
+        {
+          "part_number": "RFQ-PART-016-ALT",
+          "manufacturer": "ACME"
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-017",
+      "input_part": "RFQ-PART-017",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-017",
+          "manufacturer": "OTHER"
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-018",
+      "input_part": "RFQ-PART-018",
+      "input_manufacturer": "ACME",
+      "candidates": [
+        {
+          "part_number": "RFQ-PART-018",
+          "manufacturer": "OTHER"
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-019",
+      "input_part": "RFQ-PART-019",
+      "input_manufacturer": null,
+      "candidates": [
+        {
+          "part_number": "rfq-part-019",
+          "manufacturer": null
+        }
+      ],
+      "expected": "needs_review"
+    },
+    {
+      "id": "SYN-020",
+      "input_part": "RFQ-PART-020",
+      "input_manufacturer": "ACME",
+      "candidates": [
+        {
+          "part_number": "rfq-part-020",
+          "manufacturer": "ACME"
+        }
+      ],
+      "expected": "needs_review"
+    }
+  ]
+}
