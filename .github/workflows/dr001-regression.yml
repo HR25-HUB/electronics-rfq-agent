@@ -27,3 +27,9 @@ jobs:
           ANTHROPIC_API_KEY: "test-key-not-real"
           ERFA_USE_MOCK: "true"
         run: uv run pytest -q tests/test_dr001_policy.py
+
+      - name: Full repository regression
+        env:
+          ANTHROPIC_API_KEY: "test-key-not-real"
+          ERFA_USE_MOCK: "true"
+        run: uv run pytest -q tests/
