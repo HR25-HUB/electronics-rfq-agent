@@ -3,6 +3,7 @@
 This module consumes an externally curated, consented dataset manifest.
 No production RFQ content or supplier pricing belongs in this repository.
 """
+
 from __future__ import annotations
 
 import argparse
