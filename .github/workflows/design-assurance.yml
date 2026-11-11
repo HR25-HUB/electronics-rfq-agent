@@ -1,0 +1,54 @@
+name: NUIF Design Assurance A2
+on:
+  pull_request:
+    paths:
+      - "assurance/**"
+      - "evals/nuif_assurance_synthetic.json"
+      - "tests/test_design_assurance.py"
+      - ".github/workflows/design-assurance.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deterministic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          uv venv .venv --python 3.12
+          uv pip install --python .venv/bin/python 'pydantic>=2.7,<3' 'pytest>=8,<10' 'ruff>=0.9' 'mypy>=1.10'
+      - name: Ruff
+        run: .venv/bin/ruff check assurance tests/test_design_assurance.py
+      - name: Format
+        run: .venv/bin/ruff format --check assurance tests/test_design_assurance.py
+      - name: Types
+        run: .venv/bin/mypy assurance --ignore-missing-imports
+      - name: Tests
+        run: .venv/bin/python -m pytest -o addopts= --noconftest -q tests/test_design_assurance.py
+      - name: Synthetic eval
+        run: .venv/bin/python -m assurance.eval_cli evals/nuif_assurance_synthetic.json
+  approval:
+    needs: deterministic
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          uv venv .venv --python 3.12
+          uv pip install --python .venv/bin/python 'pydantic>=2.7,<3'
+      - name: Verify independent evidence
+        env:
+          TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test -f assurance/evidence.json || {
+            echo "PENDING: five independent reviews, human approval and real eval absent"
+            exit 1
+          }
+          .venv/bin/python -m assurance.review_gate assurance/evidence.json --sha "$TARGET_SHA"
