@@ -1,0 +1,43 @@
+name: NUIF A4 Ground Truth Contract
+on:
+  pull_request:
+    paths:
+      - "assurance/ground_truth.py"
+      - "assurance/approval_evidence.py"
+      - "tests/test_assurance_a4.py"
+      - ".github/workflows/assurance-a4.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: |
+          uv venv .venv --python 3.12
+          uv pip install --python .venv/bin/python 'pydantic>=2.7,<3' 'pytest>=8,<10' 'ruff>=0.9' 'mypy>=1.10'
+      - name: Ruff lint
+        run: .venv/bin/ruff check assurance/ground_truth.py assurance/approval_evidence.py tests/test_assurance_a4.py
+      - name: Ruff format
+        run: .venv/bin/ruff format --check assurance/ground_truth.py assurance/approval_evidence.py tests/test_assurance_a4.py
+      - name: Type check
+        run: .venv/bin/mypy assurance/ground_truth.py assurance/approval_evidence.py --ignore-missing-imports
+      - name: Contract unit tests (synthetic)
+        run: .venv/bin/python -m pytest -o addopts= --noconftest -q tests/test_assurance_a4.py
+      - name: Assert real dataset is not committed
+        run: |
+          test ! -f assurance/real_ground_truth.json
+          test ! -f assurance/approval_bundle.json
+  evidence-approval:
+    needs: contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explicitly block unverified release
+        run: |
+          echo "BLOCK: real consented ground truth, independent review, GitHub verification and human approval absent."
+          exit 1
