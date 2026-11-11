@@ -80,16 +80,18 @@ def test_same_annotator_rejected() -> None:
 
 def test_approval_requires_five_reviewer_attestations() -> None:
     try:
-        ApprovalBundle.model_validate({
-            "subject_sha": "a" * 40,
-            "author": "author",
-            "dataset_manifest_sha256": "b" * 64,
-            "ci_run_url": "https://github.com/org/repo/actions/runs/1",
-            "real_baseline_eligible": False,
-            "human_reviewer": "reviewer",
-            "human_review_url": "https://github.com/org/repo/pull/1",
-            "reviews": [],
-        })
+        ApprovalBundle.model_validate(
+            {
+                "subject_sha": "a" * 40,
+                "author": "author",
+                "dataset_manifest_sha256": "b" * 64,
+                "ci_run_url": "https://github.com/org/repo/actions/runs/1",
+                "real_baseline_eligible": False,
+                "human_reviewer": "reviewer",
+                "human_review_url": "https://github.com/org/repo/pull/1",
+                "reviews": [],
+            }
+        )
     except ValidationError:
         return
     raise AssertionError("missing reviews were accepted")
