@@ -3,6 +3,7 @@
 External review URLs must additionally be authenticated using GitHub API.
 No self-issued assertion in this file is sufficient for merging a PR.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -78,13 +79,17 @@ def main() -> int:
     except (OSError, ValueError) as exc:
         print(json.dumps({"eligible": False, "reason": str(exc)}))
         return 1
-    print(json.dumps({
-        "eligible": False,
-        "reason": (
-            "structural validation only; GitHub identities and CI "
-            "not authenticated"
-        ),
-    }))
+    print(
+        json.dumps(
+            {
+                "eligible": False,
+                "reason": (
+                    "structural validation only; GitHub identities and CI "
+                    "not authenticated"
+                ),
+            }
+        )
+    )
     return 1
 
 
