@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import os
 import tempfile
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -39,6 +40,27 @@ def parser() -> RFQParser:
 
 
 class TestParseRouting:
+    @pytest.mark.asyncio
+    async def test_parse_xlsx_quantity_with_russian_piece_suffix(
+        self, parser: RFQParser, tmp_path: Path
+    ) -> None:
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        assert ws is not None
+        ws.append(["Part Number", "Quantity", "Manufacturer"])
+        ws.append(["S203-C16", "10 шт.", "ABB"])
+        path = tmp_path / "synthetic_rfq.xlsx"
+        wb.save(path)
+
+        items = await parser.parse(path)
+
+        assert len(items) == 1
+        assert items[0].part_number == "S203-C16"
+        assert items[0].manufacturer == "ABB"
+        assert items[0].quantity == 10
+
     @pytest.mark.asyncio
     async def test_parse_routes_to_text_for_nonexistent_path(
         self, parser: RFQParser
