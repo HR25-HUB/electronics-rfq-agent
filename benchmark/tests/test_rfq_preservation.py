@@ -9,6 +9,7 @@ from electronics_rfq_agent.parser import RFQParser
 
 CONTROL_QUANTITY = 10
 CYRILLIC_QUANTITY = 200
+EXPECTED_ITEMS = 2
 CYRILLIC_PART_NUMBER = "\u0412\u041a-21300531"
 
 
@@ -31,7 +32,7 @@ def test_non_ascii_item_is_not_silently_dropped():
         },
     ]
     result = RFQParser()._parse_json_response(json.dumps(rows, ensure_ascii=False))
-    assert len(result) == 2, "RFQ line lost during parsing"
+    assert len(result) == EXPECTED_ITEMS, "RFQ line lost during parsing"
     assert [item.line_number for item in result] == [1, 2]
     assert result[1].part_number == CYRILLIC_PART_NUMBER
     assert result[1].quantity == CYRILLIC_QUANTITY
