@@ -1,6 +1,6 @@
 benchmark_id: NUIF-CODING-AGENTS-BENCHMARK-001.A1
 version: 1
-status: design_not_executed
+status: baseline_red_verified
 repository: HR25-HUB/electronics-rfq-agent
 baseline_sha: fcca4f22b18d71fd1547ddbcf2919b5edad4b29d
 source_policy:
@@ -39,7 +39,7 @@ mandatory_gates:
   no_oracle_modification: true
   human_merge_approval: true
 result_fields:
-  baseline_red: NOT_VERIFIED
+  baseline_red: VERIFIED_GITHUB_ACTIONS_RUN_44743708758
   antigravity: NOT_RUN
   github_copilot: NOT_RUN
   independent_evaluation: NOT_RUN
