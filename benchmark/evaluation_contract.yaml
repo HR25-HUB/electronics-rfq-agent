@@ -1,0 +1,45 @@
+benchmark_id: NUIF-CODING-AGENTS-BENCHMARK-001.A1
+version: 1
+status: baseline_red_verified
+repository: HR25-HUB/electronics-rfq-agent
+baseline_sha: fcca4f22b18d71fd1547ddbcf2919b5edad4b29d
+source_policy:
+  dataset: synthetic_only
+  freeze_spec: true
+  baseline_equal_for_both_agents: true
+  independent_holdout: required
+  baseline_setup_branch_is_not_agent_start: true
+agents:
+  - antigravity
+  - github_copilot
+required_observations:
+  - agent_product_version
+  - model_id
+  - execution_environment
+  - tool_permissions
+  - interventions
+  - elapsed_seconds
+  - actual_cost_or_unavailable
+  - commit_sha
+  - pytest_output
+  - ruff_output
+  - mypy_output
+  - ci_status
+weights:
+  functional_correctness: 40
+  regression_safety: 20
+  maintainability: 15
+  autonomy: 10
+  delivery_efficiency: 10
+  auditability: 5
+mandatory_gates:
+  no_silent_line_loss: true
+  no_invented_attributes: true
+  no_production_credentials: true
+  no_oracle_modification: true
+  human_merge_approval: true
+result_fields:
+  baseline_red: VERIFIED_GITHUB_ACTIONS_RUN_44743708758
+  antigravity: NOT_RUN
+  github_copilot: NOT_RUN
+  independent_evaluation: NOT_RUN

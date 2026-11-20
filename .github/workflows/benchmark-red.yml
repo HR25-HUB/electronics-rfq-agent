@@ -1,0 +1,59 @@
+name: Benchmark Baseline RED Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "benchmark/**"
+      - ".github/workflows/benchmark-red.yml"
+
+jobs:
+  baseline-red-evidence:
+    if: github.head_ref == 'benchmark/nuif-coding-agents-a11'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install benchmark dependencies
+        run: uv sync --extra dev
+
+      - name: Verify expected baseline RED, not an infrastructure error
+        shell: bash
+        run: |
+          set +e
+          uv run pytest -q -o addopts= benchmark/tests/test_rfq_preservation.py > benchmark-red.log 2>&1
+          code=$?
+          set -e
+          cat benchmark-red.log
+          printf 'pytest_exit_code=%s\n' "$code" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$code" -eq 0 ]; then
+            echo "UNEXPECTED GREEN: baseline regression test passed" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if [ "$code" -ne 1 ]; then
+            echo "INVALID RED: pytest had collection or infrastructure failure" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          grep -q '1 failed, 1 passed' benchmark-red.log || {
+            echo "INVALID RED: expected exactly one failed and one passed test" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          grep -q 'test_non_ascii_item_is_not_silently_dropped' benchmark-red.log || {
+            echo "INVALID RED: wrong test failure" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          echo "CONFIRMED EXPECTED RED ON BENCHMARK SETUP BRANCH" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload deterministic RED evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-red-evidence
+          path: benchmark-red.log
+          if-no-files-found: warn
