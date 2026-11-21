@@ -8,15 +8,15 @@ import pytest
 pytest.importorskip("pydantic_ai_harness")
 pytest.importorskip("pydantic_ai")
 
-from pydantic_ai import (  # noqa: E402
+from pydantic_ai import (
     Agent,
     ModelMessage,
     ModelResponse,
     ToolCallPart,
     models,
 )
-from pydantic_ai.models.function import AgentInfo, FunctionModel  # noqa: E402
-from pydantic_ai_harness import (  # noqa: E402
+from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai_harness import (
     GuardrailResult,
     OutputBlocked,
     OutputGuardrail,
