@@ -92,7 +92,8 @@ def evaluate_extraction(
         for assessment in assessments
     )
     complete = (
-        labels.document_id == extracted.document_id
+        bool(labels.lines)
+        and labels.document_id == extracted.document_id
         and len(expected_map) == len(labels.lines)
         and len(actual_map) == len(extracted.lines)
         and not missing
