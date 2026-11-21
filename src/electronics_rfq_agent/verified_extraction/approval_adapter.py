@@ -8,8 +8,8 @@ from __future__ import annotations
 import hashlib
 import hmac
 import sqlite3
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 from electronics_rfq_agent.verified_extraction.approval import ApprovalClaim
 from electronics_rfq_agent.verified_extraction.audit import canonical_json
