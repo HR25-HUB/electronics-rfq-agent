@@ -4,7 +4,7 @@ Thanks for considering a contribution. This document covers everything you need 
 
 ## The fastest path to contribution
 
-1. Clone the repo and run `make dev-setup` or `uv sync --extra dev && pre-commit install`
+1. Clone the repo, run `uv sync --extra dev`, then install pre-commit as an isolated tool (`uv tool install --python 3.12 pre-commit==4.7.0`) and run `pre-commit install`
 2. Pick an issue labeled `good first issue`
 3. Open a draft PR early — we review drafts and can help you avoid wasted work
 4. When tests pass and you've added/updated tests for your change, mark ready for review
@@ -18,6 +18,7 @@ git clone https://github.com/RudrenduPaul/electronics-rfq-agent
 cd electronics-rfq-agent
 pip install uv
 uv sync --extra dev
+uv tool install --python 3.12 pre-commit==4.7.0
 pre-commit install
 uv run pytest tests/ -q       # should pass on a clean clone
 ```
