@@ -50,7 +50,6 @@ dev = [
     "pytest-cov",
     "mypy>=1.10",
     "ruff>=0.9",
-    "pre-commit",
     "respx>=0.21",
     "types-openpyxl",
 ]
