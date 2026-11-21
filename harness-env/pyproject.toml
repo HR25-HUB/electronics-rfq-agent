@@ -1,0 +1,11 @@
+[project]
+name = "rfq-verified-extraction-harness-tests"
+version = "0.0.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "pydantic-ai-harness==0.70.0",
+  "pytest==8.4.2",
+]
+
+[tool.uv]
+package = false
