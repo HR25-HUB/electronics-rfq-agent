@@ -95,22 +95,68 @@ def write_audit(  # noqa: PLR0913
 
 
 def verify_audit(target: Path) -> bool:
+    """Verify file integrity, metadata binding and replayable verification.
+
+    A recomputed manifest is not an external signature; independent trusted
+    anchoring is required before treating the bundle as tamper-evident.
+    """
     try:
         manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
         checksums = manifest["files_sha256"]
-        if not isinstance(checksums, dict):
-            return False
         required = {
             "input-evidence.json",
             "extraction-result.json",
             "verification-report.json",
             "run-metadata.json",
         }
-        if set(checksums) != required:
+        if not isinstance(checksums, dict) or set(checksums) != required:
             return False
-        return all(
+        if not all(
             sha256((target / name).read_bytes()) == expected
             for name, expected in checksums.items()
-        )
+        ):
+            return False
+        return _verify_audit_semantics(target)
     except (OSError, ValueError, KeyError, TypeError):
         return False
+
+
+def _verify_audit_semantics(target: Path) -> bool:
+    """Independently replay the extraction gate against stored evidence."""
+    # Local import prevents the audit/contracts dependency from forming
+    # a module-import cycle.
+    from electronics_rfq_agent.verified_extraction.contracts import (  # noqa: PLC0415
+        EvidenceBundle,
+        ExtractionResult,
+        VerificationReport,
+        verify,
+    )
+
+    bundle = EvidenceBundle.model_validate_json(
+        (target / "input-evidence.json").read_bytes()
+    )
+    result = ExtractionResult.model_validate_json(
+        (target / "extraction-result.json").read_bytes()
+    )
+    report = VerificationReport.model_validate_json(
+        (target / "verification-report.json").read_bytes()
+    )
+    metadata = json.loads((target / "run-metadata.json").read_bytes())
+    input_hash = sha256((target / "input-evidence.json").read_bytes())
+    output_hash = sha256((target / "extraction-result.json").read_bytes())
+
+    if metadata.get("run_id") != target.name:
+        return False
+    if metadata.get("input_sha256") != input_hash:
+        return False
+    if metadata.get("output_sha256") != output_hash:
+        return False
+    policy = metadata.get("policy_version")
+    code = metadata.get("code_version")
+    if not isinstance(policy, str) or not isinstance(code, str):
+        return False
+    expected_key = reproducibility_key(input_hash, output_hash, policy, code)
+    if metadata.get("reproducibility_key") != expected_key:
+        return False
+    replayed = verify(bundle, result, result_sha256=output_hash)
+    return report == replayed
