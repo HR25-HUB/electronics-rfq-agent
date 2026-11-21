@@ -41,3 +41,40 @@ uv run pytest tests/unit/test_verified_extraction.py -q
 ## No production data
 
 Never commit real customer PDFs, RFQ text, private catalog data, credentials or proprietary evidence into this public repository.
+
+## A1.2.4E — Trusted Approval Boundary
+
+`approval.py` defines the input claim and a **TrustedApprovalVerifier Protocol**, not a
+production identity service. An `ApprovalClaim` alone is untrusted input.
+
+The approval decision is bound to `document_id`, the canonical evidence and
+result SHA-256 hashes, `run_id`, `policy_version`, reviewer, issuer,
+issue/expiry timestamps, and an opaque `proof`.
+
+**Invariants:**
+- No verifier or claim → REVIEW_REQUIRED (never VERIFIED).
+- Evidence or extraction failure → BLOCKED irrespective of any approval.
+- Changed evidence, output, run, policy, or expired approval → REVIEW_REQUIRED.
+- Verifier must authenticate issuer and reviewer, check reviewer role/entitlement,
+  validate proof, and atomically consume approval ID against a durable replay ledger.
+- The in-repository synthetic test verifier is **not a production authentication
+  mechanism** and may never be installed as the live adapter.
+- The verification report stored by the extraction engine always remains
+  `REVIEW_REQUIRED` without a separate, trusted approval authority; the
+  `assess_approval` function returns an independent final disposition.
+
+**Production blockers:** select an authorized approval provider, implement a
+server-side trust adapter, enforce per-tenant authorization and binding to
+document owner, record signed or otherwise verifiable approval evidence in
+protected storage, and add security/integration tests before enabling VERIFIED
+in an application workflow. No credentials or proof keys in GitHub.
+
+**Harness status:** An isolated Python 3.12 workflow resolves
+`pydantic-ai-harness==0.70.0` through uv and exercises FunctionModel +
+OutputGuardrail offline. This is **a pinned direct overlay, not a complete
+reproducible transitive lockfile**. Generating and committing an isolated
+lockfile, with a fully locked CI run, is still required.
+
+**Security status:** Main Trivy scanning remains blocking; do not merge this
+feature branch until the existing security PR resolves findings and the full
+CI matrix is green.
