@@ -1,5 +1,7 @@
 name: RFQ PydanticAI Harness offline integration
 on:
+  push:
+    branches: [integration/rea-rfq-a124h-sec001]
   pull_request:
     branches: [main]
 
