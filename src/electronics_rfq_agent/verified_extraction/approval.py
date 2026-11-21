@@ -10,7 +10,11 @@ from typing import Protocol
 
 from pydantic import Field, model_validator
 
-from electronics_rfq_agent.verified_extraction.audit import result_hash
+from electronics_rfq_agent.verified_extraction.audit import (
+    canonical_json,
+    result_hash,
+    sha256,
+)
 from electronics_rfq_agent.verified_extraction.contracts import (
     EvidenceBundle,
     ExtractionResult,
@@ -48,6 +52,7 @@ class TrustedApprovalVerifier(Protocol):
 
     def verify_and_consume(self, claim: ApprovalClaim) -> bool:
         """Atomic one-time verification against trusted approval authority."""
+        ...
 
 
 def assess_approval(
@@ -55,7 +60,6 @@ def assess_approval(
     result: ExtractionResult,
     report: VerificationReport,
     *,
-    evidence_sha256: str,
     run_id: str,
     policy_version: str,
     claim: ApprovalClaim | None,
@@ -64,6 +68,7 @@ def assess_approval(
 ) -> GateStatus:
     """Fail closed without a trusted verifier and matching immutable context."""
     digest = result_hash(result)
+    evidence_digest = sha256(canonical_json(bundle))
     replayed = verify(bundle, result, result_sha256=digest)
     if report != replayed or replayed.status == GateStatus.BLOCKED:
         return GateStatus.BLOCKED
@@ -76,14 +81,15 @@ def assess_approval(
         return GateStatus.REVIEW_REQUIRED
     if (
         claim.document_id != bundle.document_id
-        or claim.evidence_sha256 != evidence_sha256
+        or claim.evidence_sha256 != evidence_digest
         or claim.result_sha256 != digest
         or claim.run_id != run_id
         or claim.policy_version != policy_version
     ):
         return GateStatus.REVIEW_REQUIRED
-    return (
-        GateStatus.VERIFIED
-        if verifier.verify_and_consume(claim)
-        else GateStatus.REVIEW_REQUIRED
-    )
+    try:
+        accepted = verifier.verify_and_consume(claim)
+    except Exception:  # noqa: BLE001
+        # An unavailable or faulty authority must never grant approval.
+        return GateStatus.REVIEW_REQUIRED
+    return GateStatus.VERIFIED if accepted else GateStatus.REVIEW_REQUIRED
