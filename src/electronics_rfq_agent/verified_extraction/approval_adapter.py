@@ -3,6 +3,7 @@
 This adapter is opt-in. Keys and reviewer entitlements must be provisioned
 through a trusted service, not loaded from RFQ evidence or a model response.
 """
+
 from __future__ import annotations
 
 import hashlib
