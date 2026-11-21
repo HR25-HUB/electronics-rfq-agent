@@ -108,10 +108,10 @@ def verify(  # noqa: PLR0912
         errors.append("duplicate_source_line_id")
     if bundle.document_id != result.document_id:
         errors.append("document_id_mismatch")
-    for line in bundle.source_lines:
-        block = blocks.get(line.evidence_id)
-        if block is None or line.original_text not in block.text:
-            errors.append(f"invalid_source_line:{line.source_line_id}")
+    for registered_line in bundle.source_lines:
+        block = blocks.get(registered_line.evidence_id)
+        if block is None or registered_line.original_text not in block.text:
+            errors.append(f"invalid_source_line:{registered_line.source_line_id}")
 
     expected = Counter(x.source_line_id for x in bundle.source_lines)
     actual = Counter(x.source_line_id for x in result.lines)
