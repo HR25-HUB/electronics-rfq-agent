@@ -21,3 +21,30 @@ jobs:
         run: |
           uv run --python 3.12 --extra dev --with 'pydantic-ai-harness==0.70.0' \
             pytest tests/integration/test_pydantic_harness_optional.py -q
+
+  harness-lock-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+      - name: Resolve isolated Harness 0.70.0 environment
+        run: |
+          uv lock --project harness-env
+          sha256sum harness-env/uv.lock
+      - name: Exercise exact resolved environment without external models
+        env:
+          PYTHONPATH: src
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+        run: |
+          uv sync --project harness-env --locked
+          uv run --project harness-env --locked \
+            pytest tests/integration/test_pydantic_harness_optional.py -q
+      - name: Export resolved lockfile for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: harness-312-uv-lock
+          path: harness-env/uv.lock
+          retention-days: 7
