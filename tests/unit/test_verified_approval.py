@@ -1,4 +1,5 @@
 """Synthetic-only authorization contract tests; no production identity adapter."""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
