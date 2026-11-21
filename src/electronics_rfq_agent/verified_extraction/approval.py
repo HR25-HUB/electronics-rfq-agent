@@ -55,7 +55,7 @@ class TrustedApprovalVerifier(Protocol):
         ...
 
 
-def assess_approval(
+def assess_approval(  # noqa: PLR0913, PLR0911
     bundle: EvidenceBundle,
     result: ExtractionResult,
     report: VerificationReport,
@@ -89,7 +89,7 @@ def assess_approval(
         return GateStatus.REVIEW_REQUIRED
     try:
         accepted = verifier.verify_and_consume(claim)
-    except Exception:  # noqa: BLE001
+    except Exception:
         # An unavailable or faulty authority must never grant approval.
         return GateStatus.REVIEW_REQUIRED
     return GateStatus.VERIFIED if accepted else GateStatus.REVIEW_REQUIRED
