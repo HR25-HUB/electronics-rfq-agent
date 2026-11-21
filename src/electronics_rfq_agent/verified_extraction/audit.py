@@ -13,7 +13,10 @@ from pydantic import BaseModel
 def canonical_json(data: Any) -> bytes:
     if isinstance(data, BaseModel):
         data = data.model_dump(mode="json")
-    return (json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    payload = json.dumps(
+        data, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
+    return (payload + "\n").encode("utf-8")
 
 
 def sha256(data: bytes) -> str:
@@ -24,14 +27,19 @@ def result_hash(result: BaseModel) -> str:
     return sha256(canonical_json(result))
 
 
-def reproducibility_key(input_hash: str, output_hash: str, policy_version: str, code_version: str) -> str:
-    return sha256(canonical_json({
-        "input_sha256": input_hash, "output_sha256": output_hash,
-        "policy_version": policy_version, "code_version": code_version,
-    }))
+def reproducibility_key(
+    input_hash: str, output_hash: str, policy_version: str, code_version: str
+) -> str:
+    data = {
+        "input_sha256": input_hash,
+        "output_sha256": output_hash,
+        "policy_version": policy_version,
+        "code_version": code_version,
+    }
+    return sha256(canonical_json(data))
 
 
-def write_audit(
+def write_audit(  # noqa: PLR0913
     root: Path,
     run_id: str,
     *,
@@ -64,7 +72,9 @@ def write_audit(
         "output_sha256": output_hash,
         "policy_version": policy_version,
         "code_version": code_version,
-        "reproducibility_key": reproducibility_key(input_hash, output_hash, policy_version, code_version),
+        "reproducibility_key": reproducibility_key(
+            input_hash, output_hash, policy_version, code_version
+        ),
     }
     files["run-metadata.json"] = canonical_json(metadata)
     checksums = {name: sha256(value) for name, value in sorted(files.items())}
@@ -93,6 +103,9 @@ def verify_audit(target: Path) -> bool:
         }
         if set(checksums) != required:
             return False
-        return all(sha256((target / name).read_bytes()) == expected for name, expected in checksums.items())
+        return all(
+            sha256((target / name).read_bytes()) == expected
+            for name, expected in checksums.items()
+        )
     except (OSError, ValueError, KeyError, TypeError):
         return False
