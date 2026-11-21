@@ -1,4 +1,5 @@
 """Reproducible, no-overwrite audit artifacts for synthetic RFQ extraction."""
+
 from __future__ import annotations
 
 import hashlib
@@ -78,10 +79,12 @@ def write_audit(  # noqa: PLR0913
     }
     files["run-metadata.json"] = canonical_json(metadata)
     checksums = {name: sha256(value) for name, value in sorted(files.items())}
-    files["manifest.json"] = canonical_json({
-        "schema_version": "1.0.0",
-        "files_sha256": checksums,
-    })
+    files["manifest.json"] = canonical_json(
+        {
+            "schema_version": "1.0.0",
+            "files_sha256": checksums,
+        }
+    )
     for name, data in files.items():
         path = target / name
         with path.open("xb") as stream:
@@ -98,8 +101,10 @@ def verify_audit(target: Path) -> bool:
         if not isinstance(checksums, dict):
             return False
         required = {
-            "input-evidence.json", "extraction-result.json",
-            "verification-report.json", "run-metadata.json",
+            "input-evidence.json",
+            "extraction-result.json",
+            "verification-report.json",
+            "run-metadata.json",
         }
         if set(checksums) != required:
             return False
