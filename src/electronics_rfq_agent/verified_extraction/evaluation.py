@@ -3,6 +3,7 @@
 No model calls, catalog access, quote pricing or outbound data transmission.
 The ground-truth labels MUST be independently prepared by a qualified reviewer.
 """
+
 from __future__ import annotations
 
 from collections import Counter
@@ -59,11 +60,13 @@ def evaluate_extraction(
     expected_counts = Counter(line.source_line_id for line in labels.lines)
     actual_counts = Counter(line.source_line_id for line in extracted.lines)
     missing = sorted(
-        line_id for line_id, expected in expected_counts.items()
+        line_id
+        for line_id, expected in expected_counts.items()
         if actual_counts[line_id] < expected
     )
     duplicates = sorted(
-        line_id for line_id, count in actual_counts.items()
+        line_id
+        for line_id, count in actual_counts.items()
         if count > expected_counts[line_id] and line_id in expected_counts
     )
     unexpected = sorted(actual_counts.keys() - expected_counts.keys())
