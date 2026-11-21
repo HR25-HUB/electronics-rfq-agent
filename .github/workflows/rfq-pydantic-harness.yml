@@ -32,7 +32,7 @@ jobs:
       - name: Resolve isolated Harness 0.70.0 environment
         run: |
           uv lock --project harness-env
-          sha256sum harness-env/uv.lock
+          sha256sum -c harness-env/LOCKFILE-SHA256
       - name: Exercise exact resolved environment without external models
         env:
           PYTHONPATH: src
