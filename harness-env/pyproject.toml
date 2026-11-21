@@ -5,6 +5,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
   "pydantic-ai-harness==0.70.0",
   "pytest==8.4.2",
+  "pytest-cov>=6.0,<8",
   # The existing electronics_rfq_agent package imports these at package import.
   # Keep this list aligned with the core runtime dependencies.
   "anthropic>=0.40",
