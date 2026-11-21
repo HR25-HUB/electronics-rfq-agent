@@ -205,6 +205,11 @@ def test_invalid_evidence_blocks_even_with_approval() -> None:
     bad_line = line.model_copy(update={"quantity_raw": bad_field})
     broken_result = result.model_copy(update={"lines": [bad_line]})
     assert (
-        decide(bundle, broken_result, claim_for(bundle, result), SyntheticApprovalAuthority())
+        decide(
+            bundle,
+            broken_result,
+            claim_for(bundle, result),
+            SyntheticApprovalAuthority(),
+        )
         == GateStatus.BLOCKED
     )
