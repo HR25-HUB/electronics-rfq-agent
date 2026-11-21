@@ -1,0 +1,23 @@
+name: RFQ PydanticAI Harness offline integration
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  harness-offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+      - name: Verify Harness 0.70.0 imports and FunctionModel guardrails
+        env:
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+        run: |
+          uv run --python 3.12 --extra dev --with 'pydantic-ai-harness==0.70.0' \
+            pytest tests/integration/test_pydantic_harness_optional.py -q
