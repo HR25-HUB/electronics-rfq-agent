@@ -78,3 +78,56 @@ lockfile, with a fully locked CI run, is still required.
 **Security status:** Main Trivy scanning remains blocking; do not merge this
 feature branch until the existing security PR resolves findings and the full
 CI matrix is green.
+
+## A1.2.4F — Opt-in signed approval adapter
+
+`verified_extraction/approval_adapter.py` provides
+`SqliteHmacApprovalVerifier` as a **local single-host proof-of-concept**.
+It uses HMAC-SHA256 over canonical claim fields, a trusted issuer-key map,
+an independently configured allow-list of reviewer identities, and a
+SQLite primary-key constraint to reject consumed approval IDs atomically.
+
+The signing key **must not** be bundled with the extraction process, stored in
+Git, logged, or provided to the LLM. The `sign_approval` helper is issuer-side
+only. The verifier is constructed with keys provisioned from an approved
+secret manager. No default keys, synthetic identities, or permissive fallbacks
+exist in application code. The included test key and test reviewer are
+synthetic fixtures only.
+
+Security acceptance tests include signature invalidation on modified
+document, run, policy, evidence hash, result hash, issuer, or reviewer;
+unknown reviewer; incorrect authority key; short key rejection; atomic
+one-time replay checks across separately initialized SQLite verifiers;
+and no approval consumed when the run context is invalid.
+
+**Unresolved production requirements:**
+- Authenticated review UI with verified human identity and role mapping from
+  enterprise SSO/Bitrix24 or another authoritative identity provider;
+- tenant and business-owner scoping, key rotation, revocation and
+  organizational separation of signing and verification roles;
+- reliable clock source and review decision audit;
+- hardened, backed-up permission-restricted approval ledger with failure
+  and concurrency tests; SQLite is not a cross-region distributed ledger;
+- separate trusted audit-anchor or signed receipt for approval events;
+- tests of actual identity and secret-management integrations.
+
+`assess_approval` returns a final disposition, while the stored extraction
+`VerificationReport` remains `REVIEW_REQUIRED` in the absence of trusted
+end-to-end authorization. The current module is not invoked by
+`RFQParser`, `QuoteAgent` or ERP pathways.
+
+## Locked Harness — outstanding
+
+Current opt-in CI executes `pydantic-ai-harness==0.70.0` on Python 3.12
+without a committed isolated transitive lockfile. This is **not** sufficient
+for A1.2.4F locked-dependency acceptance.
+
+Recommended independent build contract:
+1. Create separate Python 3.12 environment/project for Harness, do not raise
+   the existing `electronics-rfq-agent` Python >=3.10 minimum.
+2. Resolve `pydantic-ai-harness==0.70.0` and dev/test dependencies with uv.
+3. Commit the generated isolated `uv.lock`, record the uv version and
+   package hashes; run `uv sync --locked` in offline CI integration job.
+4. Run Ruff, mypy, pytest and vulnerability scans on the locked runtime.
+5. Do not claim this gate passed until the actual lockfile is committed and
+   the locked GitHub workflow succeeds.
