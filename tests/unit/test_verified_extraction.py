@@ -1,8 +1,6 @@
 """Synthetic only: coverage, provenance and tamper regression tests."""
 from __future__ import annotations
 
-from dataclasses import replace
-
 import pytest
 from pydantic import ValidationError
 
