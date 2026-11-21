@@ -1,4 +1,5 @@
 """Synthetic-only acceptance tests for independent RFQ line evaluation."""
+
 from __future__ import annotations
 
 from electronics_rfq_agent.verified_extraction.contracts import (
@@ -69,9 +70,7 @@ def test_missing_line_detected() -> None:
 
 def test_duplicate_line_detected() -> None:
     labels, result = fixtures()
-    changed = result.model_copy(
-        update={"lines": [*result.lines, result.lines[0]]}
-    )
+    changed = result.model_copy(update={"lines": [*result.lines, result.lines[0]]})
     report = evaluate_extraction(labels, changed)
     assert not report.ready_for_human_review
     assert report.duplicate_line_ids == ["L1"]
@@ -96,12 +95,8 @@ def test_wrong_quantity_detected() -> None:
 
 def test_unexpected_line_detected() -> None:
     labels, result = fixtures()
-    additional = result.lines[0].model_copy(
-        update={"source_line_id": "L99"}
-    )
-    changed = result.model_copy(
-        update={"lines": [*result.lines, additional]}
-    )
+    additional = result.lines[0].model_copy(update={"source_line_id": "L99"})
+    changed = result.model_copy(update={"lines": [*result.lines, additional]})
     report = evaluate_extraction(labels, changed)
     assert not report.ready_for_human_review
     assert report.unexpected_line_ids == ["L99"]
@@ -116,12 +111,8 @@ def test_wrong_document_id_rejected() -> None:
 
 def test_incorrect_original_text_detected() -> None:
     labels, result = fixtures()
-    wrong = result.lines[0].model_copy(
-        update={"original_text": "altered source"}
-    )
-    changed = result.model_copy(
-        update={"lines": [wrong, result.lines[1]]}
-    )
+    wrong = result.lines[0].model_copy(update={"original_text": "altered source"})
+    changed = result.model_copy(update={"lines": [wrong, result.lines[1]]})
     report = evaluate_extraction(labels, changed)
     assert not report.ready_for_human_review
     assert report.line_assessments[0].original_text_match is False
@@ -137,8 +128,6 @@ def test_empty_ground_truth_cannot_approve() -> None:
 
 def test_duplicate_human_labels_are_not_automatically_accepted() -> None:
     labels, result = fixtures()
-    duplicate = labels.model_copy(
-        update={"lines": [*labels.lines, labels.lines[0]]}
-    )
+    duplicate = labels.model_copy(update={"lines": [*labels.lines, labels.lines[0]]})
     report = evaluate_extraction(duplicate, result)
     assert not report.ready_for_human_review
