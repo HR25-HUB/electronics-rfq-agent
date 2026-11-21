@@ -26,8 +26,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Security scan
+        uses: aquasecurity/trivy-action@c07df6fec6fa692e6fd1200d50aaa1fdd66f03c8 # master
+        with:
+          scan-type: fs
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync --extra dev --locked
 
       - name: Lint
         run: uv run ruff check .
@@ -51,20 +66,6 @@ jobs:
           file: coverage.xml
           fail_ci_if_error: false
 
-      - name: Security scan
-        uses: aquasecurity/trivy-action@c07df6fec6fa692e6fd1200d50aaa1fdd66f03c8 # master
-        with:
-          scan-type: fs
-          format: sarif
-          output: trivy-results.sarif
-          severity: HIGH,CRITICAL
-          exit-code: "1"
-
-      - name: Upload Trivy SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: trivy-results.sarif
 
   extras-compat:
     name: Optional extras (${{ matrix.extra }})
@@ -85,7 +86,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install core + extra
-        run: uv sync --extra dev --extra ${{ matrix.extra }}
+        run: uv sync --extra dev --extra ${{ matrix.extra }} --locked
 
       - name: Smoke test import (langchain)
         if: matrix.extra == 'langchain'
