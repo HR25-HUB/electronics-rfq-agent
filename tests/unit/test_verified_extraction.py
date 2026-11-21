@@ -203,9 +203,7 @@ def test_audit_rejects_rebuilt_manifest_with_forged_metadata(tmp_path) -> None:
     # Attacker also updates the local untrusted checksums manifest.
     manifest_path = folder / "manifest.json"
     manifest = json.loads(manifest_path.read_bytes())
-    manifest["files_sha256"]["run-metadata.json"] = sha256(
-        metadata_path.read_bytes()
-    )
+    manifest["files_sha256"]["run-metadata.json"] = sha256(metadata_path.read_bytes())
     manifest_path.write_bytes(canonical_json(manifest))
     assert not verify_audit(folder)
 
