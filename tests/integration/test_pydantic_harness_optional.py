@@ -79,9 +79,7 @@ def _sample() -> tuple[EvidenceBundle, ExtractionResult]:
 
 
 def _agent(bundle: EvidenceBundle, canned: ExtractionResult) -> Agent[Any, Any]:
-    def model_response(
-        _messages: list[ModelMessage], info: AgentInfo
-    ) -> ModelResponse:
+    def model_response(_messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
         assert info.output_tools, "Structured output tool was not provided"
         return ModelResponse(
             parts=[
