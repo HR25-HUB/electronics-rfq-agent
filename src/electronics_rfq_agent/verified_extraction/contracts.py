@@ -6,6 +6,8 @@ This module intentionally does not alter the legacy RFQParser or QuoteAgent.
 from __future__ import annotations
 
 from collections import Counter
+
+from electronics_rfq_agent.verified_extraction.audit import result_hash
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -71,21 +73,12 @@ class VerificationReport(StrictModel):
     result_sha256: str
     errors: list[str]
     coverage_verified: bool
-    approval_result_sha256: str | None = None
     status: GateStatus
 
     @model_validator(mode="after")
     def enforce_gate(self) -> VerificationReport:
-        expected = (
-            GateStatus.BLOCKED
-            if self.errors
-            else (
-                GateStatus.VERIFIED
-                if self.coverage_verified
-                and self.approval_result_sha256 == self.result_sha256
-                else GateStatus.REVIEW_REQUIRED
-            )
-        )
+        # A1.2.4 has no trusted approval service. Fail closed.
+        expected = GateStatus.BLOCKED if self.errors else GateStatus.REVIEW_REQUIRED
         if self.status != expected:
             raise ValueError(f"Invalid release status: expected {expected}")
         return self
@@ -96,9 +89,8 @@ def verify(  # noqa: PLR0912
     result: ExtractionResult,
     *,
     result_sha256: str,
-    approval_result_sha256: str | None = None,
 ) -> VerificationReport:
-    """Validate provenance, row coverage, and approval-bound result identity."""
+    """Validate provenance and row coverage without granting human approval."""
     errors: list[str] = []
     blocks = {b.evidence_id: b for b in bundle.evidence}
     source = {s.source_line_id: s for s in bundle.source_lines}
@@ -108,6 +100,8 @@ def verify(  # noqa: PLR0912
         errors.append("duplicate_source_line_id")
     if bundle.document_id != result.document_id:
         errors.append("document_id_mismatch")
+    if result_hash(result) != result_sha256:
+        errors.append("result_hash_mismatch")
     for registered_line in bundle.source_lines:
         block = blocks.get(registered_line.evidence_id)
         if block is None or registered_line.original_text not in block.text:
@@ -160,20 +154,11 @@ def verify(  # noqa: PLR0912
         )
         for e in errors
     )
-    status = (
-        GateStatus.BLOCKED
-        if errors
-        else (
-            GateStatus.VERIFIED
-            if coverage_verified and approval_result_sha256 == result_sha256
-            else GateStatus.REVIEW_REQUIRED
-        )
-    )
+    status = GateStatus.BLOCKED if errors else GateStatus.REVIEW_REQUIRED
     return VerificationReport(
         document_id=bundle.document_id,
         result_sha256=result_sha256,
         errors=errors,
         coverage_verified=coverage_verified,
-        approval_result_sha256=approval_result_sha256,
         status=status,
     )
