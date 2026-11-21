@@ -29,11 +29,9 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           python-version: "3.12"
-      - name: Resolve isolated Harness 0.70.0 environment
-        run: |
-          uv lock --project harness-env
-          sha256sum -c harness-env/LOCKFILE-SHA256
-      - name: Exercise exact resolved environment without external models
+      - name: Verify committed isolated Harness lockfile
+        run: sha256sum -c harness-env/LOCKFILE-SHA256
+      - name: Exercise committed locked environment without external models
         env:
           PYTHONPATH: src
           ANTHROPIC_API_KEY: ""
@@ -42,7 +40,7 @@ jobs:
           uv sync --project harness-env --locked
           uv run --project harness-env --locked \
             pytest tests/integration/test_pydantic_harness_optional.py -q
-      - name: Export resolved lockfile for review
+      - name: Export committed lockfile for review
         uses: actions/upload-artifact@v4
         with:
           name: harness-312-uv-lock
