@@ -2,6 +2,7 @@
 
 This module intentionally does not alter the legacy RFQParser or QuoteAgent.
 """
+
 from __future__ import annotations
 
 from collections import Counter
@@ -75,10 +76,15 @@ class VerificationReport(StrictModel):
 
     @model_validator(mode="after")
     def enforce_gate(self) -> VerificationReport:
-        expected = GateStatus.BLOCKED if self.errors else (
-            GateStatus.VERIFIED if self.coverage_verified
-            and self.approval_result_sha256 == self.result_sha256
-            else GateStatus.REVIEW_REQUIRED
+        expected = (
+            GateStatus.BLOCKED
+            if self.errors
+            else (
+                GateStatus.VERIFIED
+                if self.coverage_verified
+                and self.approval_result_sha256 == self.result_sha256
+                else GateStatus.REVIEW_REQUIRED
+            )
         )
         if self.status != expected:
             raise ValueError(f"Invalid release status: expected {expected}")
@@ -138,23 +144,30 @@ def verify(  # noqa: PLR0912
                 errors.append(f"wrong_evidence:{prefix}")
             elif not 0 <= span.start < span.end <= len(block.text):
                 errors.append(f"invalid_span:{prefix}")
-            elif block.text[span.start:span.end] != field.value:
+            elif block.text[span.start : span.end] != field.value:
                 errors.append(f"source_mismatch:{prefix}")
 
     errors = sorted(set(errors))
     coverage_verified = not any(
-        e.startswith((
-            "missing_line:",
-            "unknown_line:",
-            "duplicate_line:",
-            "duplicate_source_line_id",
-            "invalid_source_line:",
-        ))
+        e.startswith(
+            (
+                "missing_line:",
+                "unknown_line:",
+                "duplicate_line:",
+                "duplicate_source_line_id",
+                "invalid_source_line:",
+            )
+        )
         for e in errors
     )
-    status = GateStatus.BLOCKED if errors else (
-        GateStatus.VERIFIED if coverage_verified and
-        approval_result_sha256 == result_sha256 else GateStatus.REVIEW_REQUIRED
+    status = (
+        GateStatus.BLOCKED
+        if errors
+        else (
+            GateStatus.VERIFIED
+            if coverage_verified and approval_result_sha256 == result_sha256
+            else GateStatus.REVIEW_REQUIRED
+        )
     )
     return VerificationReport(
         document_id=bundle.document_id,
