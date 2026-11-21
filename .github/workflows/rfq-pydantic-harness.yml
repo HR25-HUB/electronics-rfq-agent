@@ -1,0 +1,48 @@
+name: RFQ PydanticAI Harness offline integration
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  harness-offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+      - name: Verify Harness 0.70.0 imports and FunctionModel guardrails
+        env:
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+        run: |
+          uv run --python 3.12 --extra dev --with 'pydantic-ai-harness==0.70.0' \
+            pytest tests/integration/test_pydantic_harness_optional.py -q
+
+  harness-lock-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+      - name: Verify committed isolated Harness lockfile
+        run: sha256sum -c harness-env/LOCKFILE-SHA256
+      - name: Exercise committed locked environment without external models
+        env:
+          PYTHONPATH: src
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+        run: |
+          uv sync --project harness-env --locked
+          uv run --project harness-env --locked \
+            pytest tests/integration/test_pydantic_harness_optional.py -q
+      - name: Export committed lockfile for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: harness-312-uv-lock
+          path: harness-env/uv.lock
+          retention-days: 7
