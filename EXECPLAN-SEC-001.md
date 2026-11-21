@@ -74,3 +74,22 @@ Diagnostic CI changes must be removed before completion unless they are themselv
 ## Rollback
 
 Revert the bounded SEC-001 commits. No application-domain state or data is touched.
+
+
+## Fresh dependency security revalidation — 2026-11-21
+
+The previous green CI run #35643298283 is older than one month and
+GitHub declined a rerun (HTTP 403: workflow run older than one month).
+This documentation-only commit requests a **fresh PR CI** on the existing
+SEC-001 branch, without touching dependency versions, scanner thresholds,
+ignores, application logic or production systems.
+
+On RFQ feature PR #23 (which retains the main branch lockfile), Trivy
+reported 71 HIGH/CRITICAL findings with the Nov 21 vulnerability database:
+https://github.com/HR25-HUB/electronics-rfq-agent/actions/runs/44905731641
+
+The newly triggered SEC-001 checks determine whether the existing isolated
+security branch still passes against the current database. Even if it fails,
+do not weaken scanner severity or add broad suppressions. Capture exact
+dependency/CVE evidence, re-resolve only approved requirements, and seek
+human review for dependency graph changes before merging.
