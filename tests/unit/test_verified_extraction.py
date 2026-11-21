@@ -135,35 +135,26 @@ def test_invalid_span_blocked() -> None:
     assert "invalid_span:L1:quantity_raw" in _errors(bundle, changed)
 
 
-def test_approval_binds_result_hash() -> None:
+def test_cannot_auto_approve_even_with_matching_hash() -> None:
     bundle, result = _fixture()
     digest = result_hash(result)
-    approved = verify(
-        bundle,
-        result,
-        result_sha256=digest,
-        approval_result_sha256=digest,
-    )
-    stale = verify(
-        bundle,
-        result,
-        result_sha256=digest,
-        approval_result_sha256="outdated",
-    )
-    assert approved.status == GateStatus.VERIFIED
-    assert stale.status == GateStatus.REVIEW_REQUIRED
-
-
-def test_cannot_forge_verified_report() -> None:
+    report = verify(bundle, result, result_sha256=digest)
+    assert report.status == GateStatus.REVIEW_REQUIRED
     with pytest.raises(ValidationError):
         VerificationReport(
             document_id="D",
-            result_sha256="abc",
-            errors=["bad"],
+            result_sha256=digest,
+            errors=[],
             coverage_verified=True,
-            approval_result_sha256="abc",
             status=GateStatus.VERIFIED,
         )
+
+
+def test_untrusted_result_hash_is_blocked() -> None:
+    bundle, result = _fixture()
+    report = verify(bundle, result, result_sha256="forged")
+    assert report.status == GateStatus.BLOCKED
+    assert "result_hash_mismatch" in report.errors
 
 
 def test_audit_replay_and_tampering(tmp_path) -> None:
