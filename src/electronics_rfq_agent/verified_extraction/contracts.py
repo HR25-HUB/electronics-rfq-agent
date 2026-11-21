@@ -5,7 +5,7 @@ This module intentionally does not alter the legacy RFQParser or QuoteAgent.
 from __future__ import annotations
 
 from collections import Counter
-from enum import StrEnum
+from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -59,7 +59,7 @@ class EvidenceBundle(StrictModel):
     source_lines: list[SourceLine]
 
 
-class GateStatus(StrEnum):
+class GateStatus(str, Enum):
     BLOCKED = "blocked"
     REVIEW_REQUIRED = "review_required"
     VERIFIED = "verified"
