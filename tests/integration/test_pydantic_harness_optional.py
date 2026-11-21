@@ -1,4 +1,5 @@
 """Optional PydanticAI/Harness integration. No actual LLM or tools are used."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -41,13 +42,12 @@ models.ALLOW_MODEL_REQUESTS = False
 def _sample() -> tuple[EvidenceBundle, ExtractionResult]:
     text = "ABB S203-C16 — 100 pcs"
     eid = "EV-1"
+
     def field(value: str) -> ExtractedField:
         start = text.index(value)
         return ExtractedField(
             value=value,
-            span=SourceSpan(
-                evidence_id=eid, start=start, end=start + len(value)
-            ),
+            span=SourceSpan(evidence_id=eid, start=start, end=start + len(value)),
         )
 
     bundle = EvidenceBundle(
@@ -85,10 +85,7 @@ def _agent(bundle: EvidenceBundle, canned: ExtractionResult) -> Agent[Any, Any]:
         assert info.output_tools, "Structured output tool was not provided"
         return ModelResponse(
             parts=[
-                ToolCallPart(
-                    info.output_tools[0].name,
-                    canned.model_dump(mode="json"),
-                )
+                ToolCallPart(info.output_tools[0].name, canned.model_dump(mode="json"))
             ]
         )
 
