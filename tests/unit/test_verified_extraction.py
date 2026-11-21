@@ -8,7 +8,9 @@ import pytest
 from pydantic import ValidationError
 
 from electronics_rfq_agent.verified_extraction.audit import (
+    canonical_json,
     result_hash,
+    sha256,
     verify_audit,
     write_audit,
 )
@@ -177,6 +179,63 @@ def test_audit_replay_and_tampering(tmp_path) -> None:
         write_audit(tmp_path, "run-1", **args)
     (first / "extraction-result.json").write_text("tampered", encoding="utf-8")
     assert not verify_audit(first)
+
+
+def test_audit_rejects_rebuilt_manifest_with_forged_metadata(tmp_path) -> None:
+    bundle, result = _fixture()
+    report = verify(bundle, result, result_sha256=result_hash(result))
+    folder = write_audit(
+        tmp_path,
+        "tamper-run",
+        evidence=bundle,
+        result=result,
+        report=report,
+        policy_version="a124-v1",
+        code_version="synthetic-test",
+    )
+    assert verify_audit(folder)
+
+    metadata_path = folder / "run-metadata.json"
+    metadata = json.loads(metadata_path.read_bytes())
+    metadata["reproducibility_key"] = "forged-key"
+    metadata_path.write_bytes(canonical_json(metadata))
+
+    # Attacker also updates the local untrusted checksums manifest.
+    manifest_path = folder / "manifest.json"
+    manifest = json.loads(manifest_path.read_bytes())
+    manifest["files_sha256"]["run-metadata.json"] = sha256(
+        metadata_path.read_bytes()
+    )
+    manifest_path.write_bytes(canonical_json(manifest))
+    assert not verify_audit(folder)
+
+
+def test_audit_rejects_rebuilt_manifest_with_forged_report(tmp_path) -> None:
+    bundle, result = _fixture()
+    report = verify(bundle, result, result_sha256=result_hash(result))
+    folder = write_audit(
+        tmp_path,
+        "forged-report",
+        evidence=bundle,
+        result=result,
+        report=report,
+        policy_version="a124-v1",
+        code_version="synthetic-test",
+    )
+    assert verify_audit(folder)
+
+    report_path = folder / "verification-report.json"
+    corrupted_report = json.loads(report_path.read_bytes())
+    corrupted_report["errors"] = ["fabricated_failure"]
+    corrupted_report["status"] = "blocked"
+    report_path.write_bytes(canonical_json(corrupted_report))
+    manifest_path = folder / "manifest.json"
+    manifest = json.loads(manifest_path.read_bytes())
+    manifest["files_sha256"]["verification-report.json"] = sha256(
+        report_path.read_bytes()
+    )
+    manifest_path.write_bytes(canonical_json(manifest))
+    assert not verify_audit(folder)
 
 
 def test_untrusted_document_instruction_is_data() -> None:
