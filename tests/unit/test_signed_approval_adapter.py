@@ -1,4 +1,5 @@
 """Synthetic tests for signed approvals; no live keys or customer records."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -18,8 +19,10 @@ TEST_SECRET = b"synthetic-approval-secret-32-bytes-minimum"
 def signed_claim():
     bundle, result = sample()
     unsigned = claim_for(bundle, result)
-    return bundle, result, unsigned.model_copy(
-        update={"proof": sign_approval(unsigned, TEST_SECRET)}
+    return (
+        bundle,
+        result,
+        unsigned.model_copy(update={"proof": sign_approval(unsigned, TEST_SECRET)}),
     )
 
 
@@ -114,8 +117,7 @@ def test_end_to_end_requires_valid_approval_context(tmp_path: Path) -> None:
     }
     assert assess_approval(bundle, result, report, **kwargs) == GateStatus.VERIFIED
     assert (
-        assess_approval(bundle, result, report, **kwargs)
-        == GateStatus.REVIEW_REQUIRED
+        assess_approval(bundle, result, report, **kwargs) == GateStatus.REVIEW_REQUIRED
     )
 
 
@@ -128,7 +130,9 @@ def test_invalid_run_never_consumes_valid_approval(tmp_path: Path) -> None:
     verifier = authority(tmp_path / "approvals.db")
     report = verify(bundle, result, result_sha256=result_hash(result))
     denied = assess_approval(
-        bundle, result, report,
+        bundle,
+        result,
+        report,
         run_id="different-run",
         policy_version="a124-v1",
         claim=claim,
