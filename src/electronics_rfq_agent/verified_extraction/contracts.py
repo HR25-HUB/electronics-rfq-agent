@@ -85,7 +85,7 @@ class VerificationReport(StrictModel):
         return self
 
 
-def verify(
+def verify(  # noqa: PLR0912
     bundle: EvidenceBundle,
     result: ExtractionResult,
     *,
@@ -143,7 +143,13 @@ def verify(
 
     errors = sorted(set(errors))
     coverage_verified = not any(
-        e.startswith(("missing_line:", "unknown_line:", "duplicate_line:", "duplicate_source_line_id", "invalid_source_line:"))
+        e.startswith((
+            "missing_line:",
+            "unknown_line:",
+            "duplicate_line:",
+            "duplicate_source_line_id",
+            "invalid_source_line:",
+        ))
         for e in errors
     )
     status = GateStatus.BLOCKED if errors else (
