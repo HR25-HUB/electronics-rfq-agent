@@ -1,4 +1,4 @@
-name: SEC-001 upgraded lock candidate (diagnostic only)
+name: SEC-001 dev-tool isolation candidate (diagnostic only)
 
 on:
   pull_request:
@@ -15,6 +15,16 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           python-version: "3.12"
+      - name: Test isolating pre-commit dev tool from package lock (CI workspace only)
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("pyproject.toml")
+          content = path.read_text()
+          needle = '    "pre-commit",\n'
+          assert content.count(needle) == 1, "pre-commit declaration changed"
+          path.write_text(content.replace(needle, ""))
+          PY
       - name: Resolve candidate in CI only (no repository changes)
         run: |
           uv lock --upgrade
