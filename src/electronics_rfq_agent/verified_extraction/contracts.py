@@ -6,11 +6,11 @@ This module intentionally does not alter the legacy RFQParser or QuoteAgent.
 from __future__ import annotations
 
 from collections import Counter
-
-from electronics_rfq_agent.verified_extraction.audit import result_hash
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from electronics_rfq_agent.verified_extraction.audit import result_hash
 
 
 class StrictModel(BaseModel):
