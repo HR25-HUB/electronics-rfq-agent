@@ -125,3 +125,20 @@ def test_incorrect_original_text_detected() -> None:
     report = evaluate_extraction(labels, changed)
     assert not report.ready_for_human_review
     assert report.line_assessments[0].original_text_match is False
+
+
+def test_empty_ground_truth_cannot_approve() -> None:
+    labels, result = fixtures()
+    empty_labels = labels.model_copy(update={"lines": []})
+    empty_result = result.model_copy(update={"lines": []})
+    report = evaluate_extraction(empty_labels, empty_result)
+    assert not report.ready_for_human_review
+
+
+def test_duplicate_human_labels_are_not_automatically_accepted() -> None:
+    labels, result = fixtures()
+    duplicate = labels.model_copy(
+        update={"lines": [*labels.lines, labels.lines[0]]}
+    )
+    report = evaluate_extraction(duplicate, result)
+    assert not report.ready_for_human_review
