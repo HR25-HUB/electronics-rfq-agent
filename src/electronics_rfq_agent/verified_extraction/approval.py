@@ -3,6 +3,7 @@
 A real adapter must verify signatures, reviewer identity/role, expiry and replay
 against a trusted external approval service. Never use a test fake in production.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
