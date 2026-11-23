@@ -1,0 +1,29 @@
+{
+  "project": "RFQ-MEMORY-001.A1.3",
+  "status": "EXPERIMENTAL_PARTIAL",
+  "local_tests": {
+    "passed": 14,
+    "failed": 0,
+    "command": "python -m pytest -q",
+    "scope": "A1.2 SQLite and A1.3 mock-PIM/domain tests",
+    "log": "evidence/a13-pytest-output.txt"
+  },
+  "verified": [
+    "Pydantic typed contracts",
+    "offline SQLite lifecycle",
+    "PIM verification injected trusted port",
+    "authorization before verification",
+    "external LLM calls disabled by default",
+    "identity mismatch review"
+  ],
+  "not_verified": [
+    "PostgreSQL connection and migration",
+    "actual PIM connector",
+    "DeepSeek API and Harness runtime",
+    "OpenSearch",
+    "Redpanda and Prefect",
+    "Windows A1.3"
+  ],
+  "test_data": "Synthetic only",
+  "gates": "G1/G2/G4 OPEN"
+}
