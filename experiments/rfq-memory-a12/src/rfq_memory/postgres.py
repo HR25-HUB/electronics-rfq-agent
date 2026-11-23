@@ -28,15 +28,24 @@ class PostgresRepository:
         return mid
 
     def _event_once(self, mid: str, action: str, topic: str) -> None:
-        exists = self.db.execute('''SELECT 1 FROM rfq_memory_audit
-            WHERE memory_id=%s AND action=%s LIMIT 1''',(mid,action)).fetchone()
-        if exists:
+        """Write audit and outbox atomically; duplicate action is a no-op.
+
+        Requires migration 002 unique(memory_id, action). Caller owns transaction.
+        """
+        eid = str(uuid4())
+        row = self.db.execute(
+            """INSERT INTO rfq_memory_audit (event_id,memory_id,action,occurred_at)
+               VALUES (%s,%s,%s,%s)
+               ON CONFLICT (memory_id,action) DO NOTHING RETURNING event_id""",
+            (eid, mid, action, datetime.now(timezone.utc)),
+        ).fetchone()
+        if row is None:
             return
-        eid=str(uuid4()); now=datetime.now(timezone.utc)
-        self.db.execute('INSERT INTO rfq_memory_audit VALUES (%s,%s,%s,%s)',(eid,mid,action,now))
-        self.db.execute('''INSERT INTO rfq_memory_outbox
-            (event_id,topic,memory_id,payload) VALUES (%s,%s,%s,%s::jsonb)''',
-            (eid,topic,mid,json.dumps({'memory_id':mid})))
+        self.db.execute(
+            """INSERT INTO rfq_memory_outbox (event_id,topic,memory_id,payload)
+               VALUES (%s,%s,%s,%s::jsonb)""",
+            (eid, topic, mid, json.dumps({"memory_id": mid, "action": action})),
+        )
 
     def verify(self, memory_id: str, evidence: Evidence) -> None:
         with self.db.transaction():
