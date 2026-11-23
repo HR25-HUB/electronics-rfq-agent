@@ -1,0 +1,44 @@
+{
+  "project": "RFQ-MEMORY-001.A1.2",
+  "status": "EXPERIMENTAL_PARTIAL",
+  "generated_at_utc": "2026-11-23T11:59:22.707311+00:00",
+  "runtime": {
+    "python": "3.13.5",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41"
+  },
+  "tests": {
+    "framework": "pytest",
+    "passed": 9,
+    "failed": 0,
+    "scope": "local SQLite-backed deterministic prototype",
+    "raw_log": "evidence/pytest-output.txt"
+  },
+  "verified_capabilities": [
+    "Pydantic v2 schema validation",
+    "durable SQLite persistence",
+    "candidate cannot be reused",
+    "verified exact match reuse without LLM invocation",
+    "tenant filter for exact lookup",
+    "idempotency of same proposal",
+    "repeat verify no extra events",
+    "superseded knowledge not reused",
+    "conflicting verified UPIs return REVIEW"
+  ],
+  "unverified_integrations": [
+    "PostgreSQL",
+    "OpenSearch hybrid search",
+    "DeepSeek API",
+    "PydanticAI",
+    "Pydantic AI Harness",
+    "trusted PIM source",
+    "Redpanda",
+    "Prefect",
+    "Production authorization / security"
+  ],
+  "data_provenance": "Synthetic test fixtures; no customer or production RFQs",
+  "gate": "G1/G2 NOT PASSED; no production deployment authorization",
+  "sha256_python_files": {
+    "src/rfq_memory/core.py": "d0227373b6e66d3a06c1119b6ba29aa46028655787d07b0149501f1ec14ac021",
+    "tests/test_memory.py": "b5c1c41ad622e806bb1a449210c15e223cb7c8b57c29792cdafd1d5acfa94e1b"
+  }
+}
