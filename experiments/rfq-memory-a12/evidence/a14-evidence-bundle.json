@@ -1,0 +1,37 @@
+{
+  "project": "RFQ-MEMORY-001.A1.4",
+  "classification": "EXPERIMENTAL",
+  "date": "2026-11-23",
+  "pull_request": "https://github.com/HR25-HUB/electronics-rfq-agent/pull/26",
+  "tests": {
+    "environment": "Python 3.13.5; Linux",
+    "command": "PYTHONPATH=src pytest -q",
+    "passed": 14,
+    "skipped": 7,
+    "failed": 0,
+    "postgres_integration_verified": false,
+    "reason": "No running PostgreSQL service was available in local execution container.",
+    "log": "evidence/a14-local-test-output.txt"
+  },
+  "implemented": [
+    "PostgreSQL adapter atomic audit/outbox write",
+    "DB unique(memory_id, action) migration",
+    "seven real-PostgreSQL integration tests",
+    "compose for PostgreSQL 16 isolated localhost test instance",
+    "GitHub Actions service job with RFQ_REQUIRE_POSTGRES=1"
+  ],
+  "unverified": [
+    "Live PostgreSQL transactions",
+    "PostgreSQL migration execution",
+    "Concurrent eight-client replay under PostgreSQL",
+    "CI workflow completion",
+    "real PIM, DeepSeek and Harness",
+    "production authorization/RLS and rollback"
+  ],
+  "architecture_gates": {
+    "G1": "OPEN",
+    "G2": "OPEN",
+    "G4": "BLOCKED"
+  },
+  "next_gate": "Successful GitHub Actions or Windows Docker PostgreSQL integration, with run URL and logs"
+}
