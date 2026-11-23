@@ -1,0 +1,17 @@
+[project]
+name = "rfq-memory-a12"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["pydantic>=2.10,<3"]
+
+[project.optional-dependencies]
+agent = ["pydantic-ai", "pydantic-ai-harness"]
+postgres = ["psycopg[binary]>=3.2"]
+search = ["opensearch-py>=2"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
